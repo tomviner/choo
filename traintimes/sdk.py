@@ -33,7 +33,15 @@ class RTTBase:
 
     # URI template language as per RFC6570
     base_uri_template = 'https://api.rtt.io/api/{version}/{accept}'
-    auth = tuple(os.environ['RTT_AUTH'].split(':'))
+    @property
+    def auth(self):
+        for var in ('CHOO_AUTH', 'RTT_AUTH'):
+            value = os.environ.get(var)
+            if value:
+                return tuple(value.split(':'))
+        raise ResponseError(
+            "No API credentials found. Set CHOO_AUTH or RTT_AUTH environment variable (format: user:password)"
+        )
 
     def __init__(self, version='v1', accept='json'):
         self.context = {'version': version, 'accept': accept}

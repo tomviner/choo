@@ -221,6 +221,32 @@ class TestService:
             ServiceRequest.from_inputs('A12345', '2024-01-01')
 
 
+class TestAuth:
+    """Test lazy auth loading and env var precedence"""
+
+    def test_missing_auth_raises_on_get(self, monkeypatch, requests_mock):
+        """Missing auth raises ResponseError on .get(), not on import/instantiation"""
+        monkeypatch.delenv('RTT_AUTH', raising=False)
+        monkeypatch.delenv('CHOO_AUTH', raising=False)
+        subject = Location('HIB')  # no error here
+        with pytest.raises(ResponseError, match="No API credentials found"):
+            subject.get()
+
+    def test_choo_auth_takes_precedence(self, monkeypatch):
+        """CHOO_AUTH takes precedence over RTT_AUTH"""
+        monkeypatch.setenv('CHOO_AUTH', 'choo_user:choo_pass')
+        monkeypatch.setenv('RTT_AUTH', 'rtt_user:rtt_pass')
+        subject = Location('HIB')
+        assert subject.auth == ('choo_user', 'choo_pass')
+
+    def test_rtt_auth_fallback(self, monkeypatch):
+        """RTT_AUTH works as fallback when CHOO_AUTH is not set"""
+        monkeypatch.delenv('CHOO_AUTH', raising=False)
+        monkeypatch.setenv('RTT_AUTH', 'rtt_user:rtt_pass')
+        subject = Location('HIB')
+        assert subject.auth == ('rtt_user', 'rtt_pass')
+
+
 class TestErrorHandling:
     """Test error scenarios in the get() method"""
 
