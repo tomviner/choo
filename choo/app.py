@@ -11,7 +11,7 @@ import typer
 from rich.console import Console
 
 from choo import __version__
-from choo.config import get_aliases, get_auth
+from choo.config import get_aliases, get_auth, remove_alias, set_alias
 from choo.output import format_board, format_next, format_service, stderr_console
 from choo.resolve import AmbiguousStation, StationNotFound, resolve_station
 from traintimes.sdk import Location, ResponseError, Service
@@ -220,3 +220,107 @@ def board_cmd(
     else:
         console = Console()
         format_board(console, response)
+
+
+@app.command()
+def service(
+    uid: str = typer.Argument(..., metavar="UID", help="Service UID (e.g., G54821)"),
+    on: Optional[str] = typer.Option(None, "--on", "-d", help="Date (default: today)"),
+    use_json: bool = typer.Option(False, "--json", help="JSON output"),
+):
+    """Full calling pattern for a service."""
+    _check_auth()
+    date = _dt.date.today()
+    if on:
+        when = _build_when(at=None, on=on)
+        if isinstance(when, _dt.datetime):
+            date = when.date()
+        elif isinstance(when, _dt.date):
+            date = when
+
+    err = stderr_console()
+    try:
+        response = Service(uid, date).get()
+    except ResponseError as e:
+        err.print(f"[bold red]✗ API error: {e.message}[/]")
+        raise typer.Exit(1)
+
+    err.print(f"  {uid} — {response.atoc_name} — {response.run_date:%d %b %Y}")
+
+    if use_json:
+        print(_json.dumps(response.model_dump(by_alias=True), default=str, indent=2))
+    else:
+        console = Console()
+        format_service(console, response)
+
+
+# ── Alias subcommands ──────────────────────────────────────────────
+
+alias_app = typer.Typer(help="Manage station aliases.")
+app.add_typer(alias_app, name="alias")
+
+
+@alias_app.command("set")
+def alias_set(
+    name: str = typer.Argument(..., help="Alias name (e.g., 'home')"),
+    crs: str = typer.Argument(..., help="Station CRS code (e.g., 'HIB')"),
+):
+    """Save a station alias."""
+    err = stderr_console()
+    try:
+        set_alias(name, crs)
+    except ValueError as e:
+        err.print(f"[bold red]✗ {e}[/]")
+        raise typer.Exit(1)
+    console = Console()
+    console.print(f"  Alias '{name}' → {crs.upper()}")
+
+
+@alias_app.command("list")
+def alias_list():
+    """Show all saved aliases."""
+    aliases = get_aliases()
+    console = Console()
+    if not aliases:
+        console.print("  No aliases configured.")
+        return
+    for name, crs in sorted(aliases.items()):
+        console.print(f"  {name:<15} {crs}")
+
+
+@alias_app.command("remove")
+def alias_remove(
+    name: str = typer.Argument(..., help="Alias name to remove"),
+):
+    """Remove a station alias."""
+    remove_alias(name)
+    console = Console()
+    console.print(f"  Removed alias '{name}'")
+
+
+# ── Auth command ────────────────────────────────────────────────────
+
+
+@app.command()
+def auth():
+    """Set up RTT API credentials."""
+    from choo.config import _config_dir
+
+    err = stderr_console()
+    err.print("  RTT API credentials setup")
+    err.print()
+    err.print("  1. Register at [link]https://api.rtt.io/[/link]")
+    err.print("  2. Enter your credentials below")
+    err.print()
+
+    username = typer.prompt("  Username")
+    password = typer.prompt("  Password", hide_input=True)
+
+    config_dir = _config_dir()
+    config_dir.mkdir(parents=True, exist_ok=True)
+    auth_file = config_dir / "auth"
+    auth_file.write_text(f"{username}:{password}")
+    auth_file.chmod(0o600)
+
+    console = Console()
+    console.print("\n  [green]✓ Credentials saved.[/]")
