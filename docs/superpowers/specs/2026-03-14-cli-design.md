@@ -24,6 +24,7 @@ $ choo home work
 Flags:
 - `--at HH:MM` / `-t` — time of day
 - `--on DATE` / `-d` — date (ISO format, day name, or "tomorrow")
+- `--count N` / `-n` — number of results (default: 3)
 - `--arrivals` — show arrivals instead of departures
 - `--json` — JSON output for scripting
 
@@ -98,13 +99,18 @@ Stations can be specified as:
 
 Station list sourced from RTT API if possible (data changes over time). Implementation detail deferred — should not block initial development. Can start with a bundled list and upgrade later.
 
-### Resolution rules
+### Resolution order
 
-- Check aliases first
-- If input is 3 uppercase letters, treat as CRS code
-- Otherwise, fuzzy match against station names
-- If no match: error with suggestions
-- If ambiguous (multiple matches): error listing the matches with their CRS codes
+1. Check environment aliases (`CHOO_ALIAS_<NAME>`) — highest priority
+2. Check config file aliases (`aliases.json`)
+3. If input is 3 uppercase letters, treat as CRS code
+4. Otherwise, fuzzy match against station names
+5. If no match: error with suggestions
+6. If ambiguous (multiple matches): error listing the matches with their CRS codes
+
+### Reserved names
+
+Alias names must not collide with subcommand names (`next`, `board`, `service`, `alias`, `auth`). The `alias set` command rejects reserved names with a clear error.
 
 ## Answer Types
 
@@ -211,6 +217,28 @@ XDG Base Directory convention:
 - `CHOO_ALIAS_<NAME>=CRS` — station aliases via env (e.g., `CHOO_ALIAS_HOME=HIB`)
 - Env vars take precedence over config files
 
+## Implementation Notes
+
+### SDK refactoring required
+
+The existing SDK reads `RTT_AUTH` eagerly at class definition time (`sdk.py` line 36). This crashes at import if credentials are missing. Must be refactored to lazy evaluation so the CLI can catch the error and show the friendly auth setup message.
+
+### Combining `--at` and `--on` flags
+
+The SDK's `Location.from_inputs()` takes a single `when` parameter (date or datetime). The CLI must combine `--at` (time) and `--on` (date) into a single datetime when both are provided. When only `--at` is given, combine with today. When only `--on` is given, pass as date (no time filter).
+
+### Default subcommand in Typer
+
+Typer does not natively support default subcommands. `choo home work` (without `next`) requires a workaround — likely a callback on the app that detects when the first argument is not a known subcommand and routes to `next`.
+
+### `--json` output shape
+
+JSON mode outputs the Pydantic model's `.model_dump(by_alias=True)` — matching the API's camelCase field names. This provides a stable contract and lets users cross-reference with RTT API docs.
+
+### Cache TTL
+
+The existing `requests-cache` setup should use a short TTL (e.g., 60 seconds) for realtime queries. Historical date queries can cache longer.
+
 ## Technical Stack
 
 - **CLI framework:** Typer
@@ -221,6 +249,8 @@ XDG Base Directory convention:
 - **Config:** XDG base dirs
 - **Station matching:** fuzzy matching library (e.g., thefuzz or rapidfuzz)
 - **Python:** >=3.10
+
+Standard flags: `--version`, `--help`
 
 ## Scope
 
