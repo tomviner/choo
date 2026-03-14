@@ -13,7 +13,14 @@ dependencies = [
   "requests-cache>=1.2",
   "python-dotenv>=1",
   "pydantic>=2.7",
+  "typer>=0.9",
+  "rich>=13",
+  "rapidfuzz>=3",
+  "platformdirs>=4",
 ]
+
+[project.scripts]
+choo = "choo.app:app"
 
 [project.urls]
 Homepage = "https://github.com/tomviner/traintimes"
