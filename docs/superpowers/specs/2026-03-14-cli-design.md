@@ -11,6 +11,8 @@ A CLI for querying UK train times, wrapping the RealTimeTrains Pull API.
 
 Show the next 1-3 trains between two stations. This is the default command — `choo home work` is equivalent to `choo next home work`.
 
+If no arguments at all, uses default aliases `home` and `work` (i.e., `choo` = `choo next home work`). Errors clearly if those aliases aren't set.
+
 Default time is now.
 
 ```
@@ -213,7 +215,9 @@ XDG Base Directory convention:
 
 ### Environment variables
 
-- `RTT_AUTH=user:password` — API credentials (existing convention)
+- `CHOO_AUTH=user:password` — API credentials
+- `RTT_AUTH=user:password` — also supported (existing SDK convention)
+- Resolution: `CHOO_AUTH` > `RTT_AUTH` > config file
 - `CHOO_ALIAS_<NAME>=CRS` — station aliases via env (e.g., `CHOO_ALIAS_HOME=HIB`)
 - Env vars take precedence over config files
 
