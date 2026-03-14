@@ -16,11 +16,23 @@ from choo.resolve import AmbiguousStation, StationNotFound, resolve_station
 from traintimes.sdk import Location, ResponseError, Service
 
 
+class _DefaultGroup(typer.core.TyperGroup):
+    """Click Group subclass that routes unknown commands to 'next'."""
+
+    def resolve_command(self, ctx, args):
+        try:
+            return super().resolve_command(ctx, args)
+        except Exception:
+            # Unknown subcommand — treat all args as 'next' arguments
+            return super().resolve_command(ctx, ["next", *args])
+
+
 app = typer.Typer(
     name="choo",
     help="UK train times from your terminal.",
     no_args_is_help=False,
     invoke_without_command=True,
+    cls=_DefaultGroup,
 )
 
 _DAY_NAMES = {

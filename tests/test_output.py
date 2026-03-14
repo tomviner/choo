@@ -220,6 +220,20 @@ class TestFormatBoard_Extended:
         output = con.file.getvalue()
         assert "W12345" in output
 
+    def test_dest_fallback_to_location_detail(self):
+        """_dest_name falls back to locationDetail.destination."""
+        svc = _make_location_service()
+        svc_data = svc.model_dump(by_alias=True)
+        svc_data["destination"] = None
+        svc_data["locationDetail"]["destination"] = [
+            {"tiploc": "MOORGT", "description": "Moorgate"}
+        ]
+        resp = _make_location_response(services=[svc_data])
+        con = _console()
+        format_board(con, resp)
+        output = con.file.getvalue()
+        assert "Moorgate" in output
+
     def test_arrival_time_short_raw(self):
         """Line 55/69: _arrival_time / _booked_arr_time with short raw string."""
         svc = _make_location_service()

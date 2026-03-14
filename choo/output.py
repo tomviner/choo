@@ -72,6 +72,8 @@ def _dest_name(service: LocationService) -> str:
     """Get destination name from LocationService."""
     if service.destination:
         return service.destination[0].description
+    if service.location_detail.destination:
+        return service.location_detail.destination[0].description
     return ""
 
 

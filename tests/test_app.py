@@ -341,6 +341,16 @@ class TestDefaultCommand:
         assert result.exit_code == 1
         assert "home" in result.output.lower() and "work" in result.output.lower()
 
+    def test_unknown_subcommand_routes_to_next(self, monkeypatch):
+        """choo home work routes to choo next home work."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        monkeypatch.setenv("CHOO_ALIAS_HOME", "HIB")
+        monkeypatch.setenv("CHOO_ALIAS_WORK", "MOG")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=SAMPLE_LOCATION_JSON)
+            result = runner.invoke(app, ["home", "work"])
+        assert result.exit_code == 0
+
     def test_default_no_auth(self, monkeypatch, tmp_path):
         monkeypatch.delenv("CHOO_AUTH", raising=False)
         monkeypatch.delenv("RTT_AUTH", raising=False)
