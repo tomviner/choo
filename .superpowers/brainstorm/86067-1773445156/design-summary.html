@@ -1,0 +1,124 @@
+<h2>Design So Far</h2>
+<p class="subtitle">Decisions locked in — anything missing?</p>
+
+<div class="section">
+  <h3>Command Structure</h3>
+  <pre style="background:#0d1117;padding:16px;border-radius:8px;font-size:12px;line-height:2;color:#e2e8f0;">
+<span style="color:#6ee7b7;font-weight:700;">Core commands</span>
+tt home work                          <span style="color:#94a3b8;"># next 3 trains (default cmd = next)</span>
+tt next home work                     <span style="color:#94a3b8;"># same thing, explicit</span>
+tt board home                         <span style="color:#94a3b8;"># full departure board</span>
+tt board home --to work               <span style="color:#94a3b8;"># board filtered to destination</span>
+tt board home --arrivals              <span style="color:#94a3b8;"># arrival board</span>
+tt service G54821                     <span style="color:#94a3b8;"># full calling pattern (today)</span>
+tt service G54821 --on 2026-03-17     <span style="color:#94a3b8;"># calling pattern on specific date</span>
+
+<span style="color:#6ee7b7;font-weight:700;">Time & date (flags, conventional style)</span>
+tt home work --at 14:30               <span style="color:#94a3b8;"># today at 14:30</span>
+tt home work --on tomorrow            <span style="color:#94a3b8;"># tomorrow</span>
+tt home work --on tuesday             <span style="color:#94a3b8;"># next Tuesday</span>
+tt home work --on 2026-03-17          <span style="color:#94a3b8;"># specific date</span>
+tt home work -t 9:00 -d tuesday       <span style="color:#94a3b8;"># short flags</span>
+
+<span style="color:#6ee7b7;font-weight:700;">Aliases</span>
+tt alias set home HIB                 <span style="color:#94a3b8;"># save alias</span>
+tt alias set work MOG                 <span style="color:#94a3b8;"># save alias</span>
+tt alias list                         <span style="color:#94a3b8;"># show all aliases</span>
+tt alias remove home                  <span style="color:#94a3b8;"># delete alias</span>
+
+<span style="color:#6ee7b7;font-weight:700;">API base layer (kept out of the way)</span>
+tt search HIB                         <span style="color:#94a3b8;"># raw location search</span>
+tt search HIB --to MOG --on 2026-03-17 --at 1430 --arrivals
+tt service G54821 --on 2026-03-17     <span style="color:#94a3b8;"># (shared with core)</span>
+
+<span style="color:#6ee7b7;font-weight:700;">Output control</span>
+tt home work --json                   <span style="color:#94a3b8;"># JSON output for scripting</span>
+  </pre>
+</div>
+
+<div class="section">
+  <h3>Answer Types → Commands</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="border-bottom:2px solid #334155;">
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Answer type</th>
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Command</th>
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Output</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:8px;color:#f472b6;font-weight:600;">Next train</td>
+        <td style="padding:8px;font-family:monospace;font-size:12px;">tt [from] [to]</td>
+        <td style="padding:8px;color:#94a3b8;">1-3 services, compact, countdown</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:8px;color:#6ee7b7;font-weight:600;">Board</td>
+        <td style="padding:8px;font-family:monospace;font-size:12px;">tt board [station]</td>
+        <td style="padding:8px;color:#94a3b8;">Table of services, departure board style</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:8px;color:#fde68a;font-weight:600;">Service</td>
+        <td style="padding:8px;font-family:monospace;font-size:12px;">tt service [uid]</td>
+        <td style="padding:8px;color:#94a3b8;">Full calling pattern, live progress</td>
+      </tr>
+      <tr>
+        <td style="padding:8px;color:#7dd3fc;font-weight:600;">Search (API)</td>
+        <td style="padding:8px;font-family:monospace;font-size:12px;">tt search [station]</td>
+        <td style="padding:8px;color:#94a3b8;">Raw-ish output, power users</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Key Decisions</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Typer + Rich</div>
+      <div style="color:#a7f3d0;font-size:11px;">CLI framework + beautiful output</div>
+    </div>
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Fuzzy station names + CRS codes</div>
+      <div style="color:#a7f3d0;font-size:11px;">Both accepted, short = code, long = search</div>
+    </div>
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Station aliases</div>
+      <div style="color:#a7f3d0;font-size:11px;">tt alias set home HIB</div>
+    </div>
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Non-interactive</div>
+      <div style="color:#a7f3d0;font-size:11px;">Pure CLI, scriptable, pipeable</div>
+    </div>
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Drill-down via UID</div>
+      <div style="color:#a7f3d0;font-size:11px;">Board shows UIDs, tt service drills in</div>
+    </div>
+    <div style="background:#065f46;border-radius:6px;padding:10px;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">✓ Conventional flags</div>
+      <div style="color:#a7f3d0;font-size:11px;">--at, --on, --arrivals, --json</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Still to decide</h3>
+  <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px;">
+    <div style="background:#1a1a2e;border-left:3px solid #fde68a;padding:12px;border-radius:0 8px 8px 0;">
+      <div style="color:#fde68a;font-weight:600;font-size:13px;">Output formatting details</div>
+      <div style="color:#94a3b8;font-size:12px;">How exactly should "next", "board", and "service" look? Colours, columns, countdown format.</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #fde68a;padding:12px;border-radius:0 8px 8px 0;">
+      <div style="color:#fde68a;font-weight:600;font-size:13px;">Station name resolution</div>
+      <div style="color:#94a3b8;font-size:12px;">Where does the station list come from? Bundled? Fetched? How does fuzzy matching work?</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #fde68a;padding:12px;border-radius:0 8px 8px 0;">
+      <div style="color:#fde68a;font-weight:600;font-size:13px;">Error UX</div>
+      <div style="color:#94a3b8;font-size:12px;">No auth set up? Station not found? API down? Cancelled train?</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #fde68a;padding:12px;border-radius:0 8px 8px 0;">
+      <div style="color:#fde68a;font-weight:600;font-size:13px;">Config storage</div>
+      <div style="color:#94a3b8;font-size:12px;">Where do aliases live? ~/.config/tt/? XDG? Same .env as RTT_AUTH?</div>
+    </div>
+  </div>
+</div>

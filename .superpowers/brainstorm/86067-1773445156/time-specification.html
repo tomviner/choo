@@ -1,0 +1,104 @@
+<h2>How should users specify time?</h2>
+<p class="subtitle">Default is "now". How do we express other times?</p>
+
+<div class="section">
+  <h3>The scenarios</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+    <div style="background:#1a1a2e;padding:12px;border-radius:8px;border:1px solid #334155;">
+      <div style="color:#6ee7b7;font-size:12px;font-weight:600;">NOW (default)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">"What's next?" — standing at the station</div>
+    </div>
+    <div style="background:#1a1a2e;padding:12px;border-radius:8px;border:1px solid #334155;">
+      <div style="color:#7dd3fc;font-size:12px;font-weight:600;">LATER TODAY</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">"What's available around 14:30?"</div>
+    </div>
+    <div style="background:#1a1a2e;padding:12px;border-radius:8px;border:1px solid #334155;">
+      <div style="color:#a78bfa;font-size:12px;font-weight:600;">SPECIFIC DATE</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">"What runs on Tuesday?"</div>
+    </div>
+    <div style="background:#1a1a2e;padding:12px;border-radius:8px;border:1px solid #334155;">
+      <div style="color:#fde68a;font-size:12px;font-weight:600;">DATE + TIME</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">"Tuesday around 9am"</div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Flags Only</h3>
+      <p>Explicit --at and --on flags</p>
+      <pre style="background:#0d1117;padding:12px;border-radius:6px;margin-top:8px;font-size:12px;line-height:1.8;color:#e2e8f0;">
+tt home work                          <span style="color:#94a3b8;"># now</span>
+tt home work --at 14:30               <span style="color:#94a3b8;"># today at 14:30</span>
+tt home work --on tuesday             <span style="color:#94a3b8;"># next Tuesday, now-ish</span>
+tt home work --on 2026-03-17          <span style="color:#94a3b8;"># specific date</span>
+tt home work --on tuesday --at 9:00   <span style="color:#94a3b8;"># Tuesday at 9am</span>
+tt home work --on tomorrow            <span style="color:#94a3b8;"># natural day words</span></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Unambiguous — no parsing guesswork</li><li>Composable — --on and --at work independently</li><li>Tab-completable</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Verbose for quick queries</li><li>"--at 14:30 --on tuesday" is a lot of typing</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Positional "at" keyword</h3>
+      <p>Natural English-like syntax with "at" as separator</p>
+      <pre style="background:#0d1117;padding:12px;border-radius:6px;margin-top:8px;font-size:12px;line-height:1.8;color:#e2e8f0;">
+tt home work                          <span style="color:#94a3b8;"># now</span>
+tt home work at 14:30                 <span style="color:#94a3b8;"># today at 14:30</span>
+tt home work at 9:00 on tuesday       <span style="color:#94a3b8;"># Tuesday at 9am</span>
+tt home work on tomorrow              <span style="color:#94a3b8;"># tomorrow, now-ish</span>
+tt home work on 2026-03-17            <span style="color:#94a3b8;"># specific date</span></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Reads like English</li><li>Quick to type</li><li>Memorable</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>"at" could clash with station names</li><li>Positional parsing is fragile</li><li>Unconventional for CLI tools</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Smart Positional Argument</h3>
+      <p>Time/date as optional last argument — auto-detected by format</p>
+      <pre style="background:#0d1117;padding:12px;border-radius:6px;margin-top:8px;font-size:12px;line-height:1.8;color:#e2e8f0;">
+tt home work                          <span style="color:#94a3b8;"># now</span>
+tt home work 14:30                    <span style="color:#94a3b8;"># today at 14:30</span>
+tt home work tomorrow                 <span style="color:#94a3b8;"># tomorrow, now-ish</span>
+tt home work tuesday                  <span style="color:#94a3b8;"># next Tuesday</span>
+tt home work "tuesday 9:00"           <span style="color:#94a3b8;"># Tuesday at 9am</span>
+tt home work 2026-03-17               <span style="color:#94a3b8;"># specific date</span></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Shortest possible input</li><li>Feels natural</li><li>Works like "remind me tuesday" style tools</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Ambiguity risk (is "bath" a station or...?)</li><li>Quoting needed for date+time combo</li><li>Harder to implement reliably</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="d" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Hybrid: Flag for date, positional for time</h3>
+      <p>Time is common enough to earn a shortcut. Date is rarer, gets a flag.</p>
+      <pre style="background:#0d1117;padding:12px;border-radius:6px;margin-top:8px;font-size:12px;line-height:1.8;color:#e2e8f0;">
+tt home work                          <span style="color:#94a3b8;"># now</span>
+tt home work 14:30                    <span style="color:#94a3b8;"># today at 14:30</span>
+tt home work 9:00 --on tuesday        <span style="color:#94a3b8;"># Tuesday at 9am</span>
+tt home work --on tomorrow            <span style="color:#94a3b8;"># tomorrow, now-ish</span>
+tt home work --on 2026-03-17          <span style="color:#94a3b8;"># specific date</span>
+tt home work 14:30 --on 2026-03-17    <span style="color:#94a3b8;"># date + time</span></pre>
+      <p style="margin-top:10px;font-size:12px;color:#94a3b8;">
+        Time is always HH:MM format (colon required) — no ambiguity with station names. Date uses --on flag so it's explicit.
+      </p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Common case (time today) is short</li><li>No ambiguity — colon means time, --on means date</li><li>Conventional flag for the less-common option</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Mixed positional + flag style</li><li>Must remember which is which</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

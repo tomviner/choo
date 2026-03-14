@@ -63,3 +63,19 @@ class TestResolveStation:
             resolve_station("Birmingham")
         assert exc_info.value.query == "Birmingham"
         assert len(exc_info.value.matches) >= 2
+
+    def test_no_fuzzy_results(self, monkeypatch):
+        """Line 42: fuzzy_search returns empty list."""
+        monkeypatch.setattr("choo.resolve.fuzzy_search", lambda *a, **kw: [])
+        with pytest.raises(StationNotFound) as exc_info:
+            resolve_station("zzzzz")
+        assert exc_info.value.suggestions == []
+
+    def test_single_good_match_no_ambiguity(self, monkeypatch):
+        """Line 50->58: only one result, no ambiguity check needed."""
+        monkeypatch.setattr(
+            "choo.resolve.fuzzy_search",
+            lambda q, limit=5: [("London Paddington", "PAD", 95.0)],
+        )
+        result = resolve_station("London Paddington")
+        assert result == "PAD"

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import datetime as _dt
 import json as _json
-import sys
 from typing import Optional
 
 import typer
@@ -15,6 +14,7 @@ from choo.config import get_aliases, get_auth, remove_alias, set_alias
 from choo.output import format_board, format_next, format_service, stderr_console
 from choo.resolve import AmbiguousStation, StationNotFound, resolve_station
 from traintimes.sdk import Location, ResponseError, Service
+
 
 app = typer.Typer(
     name="choo",
@@ -184,13 +184,18 @@ def next_cmd(
     from_station: str = typer.Argument(..., metavar="FROM"),
     to_station: str = typer.Argument(..., metavar="TO"),
     at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
-    on: Optional[str] = typer.Option(None, "--on", "-d", help="Date (today/tomorrow/day name/ISO)"),
+    on: Optional[str] = typer.Option(
+        None, "--on", "-d", help="Date (today/tomorrow/day name/ISO)"
+    ),
     count: int = typer.Option(3, "--count", "-n", help="Number of results"),
     arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
     json: bool = typer.Option(False, "--json", help="Output JSON"),
 ):
     """Show next trains between two stations."""
-    _run_next(from_station, to_station, at=at, on=on, count=count, arrivals=arrivals, json=json)
+    _run_next(
+        from_station, to_station,
+        at=at, on=on, count=count, arrivals=arrivals, json=json,
+    )
 
 
 @app.command("board")
@@ -235,7 +240,7 @@ def service(
         when = _build_when(at=None, on=on)
         if isinstance(when, _dt.datetime):
             date = when.date()
-        elif isinstance(when, _dt.date):
+        else:
             date = when
 
     err = stderr_console()

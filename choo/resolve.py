@@ -3,7 +3,7 @@
 import re
 
 from choo.config import get_aliases
-from choo.stations import fuzzy_search, load_stations
+from choo.stations import fuzzy_search
 
 
 class StationNotFound(Exception):

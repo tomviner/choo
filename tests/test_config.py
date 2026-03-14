@@ -88,6 +88,22 @@ class TestRemoveAlias:
         data = json.loads(alias_file.read_text())
         assert "home" not in data
 
+    def test_remove_alias_no_file(self, tmp_path):
+        """Line 74: remove_alias returns early when no aliases file exists."""
+        remove_alias("nonexistent")
+        # Should not raise
+
+
+class TestSetAliasExistingFile:
+    def test_updates_existing_aliases_file(self, tmp_path):
+        """Line 64: set_alias reads existing aliases.json before updating."""
+        set_alias("home", "btn")
+        set_alias("work", "pad")
+        alias_file = tmp_path / "choo" / "aliases.json"
+        data = json.loads(alias_file.read_text())
+        assert data["home"] == "BTN"
+        assert data["work"] == "PAD"
+
 
 class TestReservedNames:
     def test_reserved_names(self):

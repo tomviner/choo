@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import sys
-
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -15,6 +13,7 @@ from traintimes.models import (
     ServiceLocationState,
     ServiceResponse,
 )
+
 
 _MARKERS = "\u2776\u2777\u2778\u2779\u277a\u277b\u277c\u277d\u277e\u277f"
 
@@ -93,9 +92,14 @@ def format_next(
         dep = _departure_time(evt)
         plat = f"P{evt.platform}" if evt.platform else ""
         lateness = evt.realtime_gbtt_departure_lateness
-        cancelled = evt.display_as in ("CANCELLED_CALL", "CANCELLED_PASS") if evt.display_as else False
+        _CANCEL = ("CANCELLED_CALL", "CANCELLED_PASS")
+        cancelled = evt.display_as in _CANCEL if evt.display_as else False
         status = _status_text(lateness, cancelled)
-        countdown = f"{svc.countdown_minutes}m" if svc.countdown_minutes is not None else ""
+        countdown = (
+            f"{svc.countdown_minutes}m"
+            if svc.countdown_minutes is not None
+            else ""
+        )
 
         line = Text()
         line.append(f"{marker} ")
@@ -124,10 +128,13 @@ def format_board(console: Console, response: LocationResponse) -> None:
         dest = _dest_name(svc)
         plat = evt.platform or ""
         lateness = evt.realtime_gbtt_departure_lateness
-        cancelled = evt.display_as in ("CANCELLED_CALL", "CANCELLED_PASS") if evt.display_as else False
+        _CANCEL = ("CANCELLED_CALL", "CANCELLED_PASS")
+        cancelled = evt.display_as in _CANCEL if evt.display_as else False
         status = _status_text(lateness, cancelled)
 
-        table.add_row(dep, dest, plat, status, svc.atoc_name, svc.service_uid)
+        table.add_row(
+            dep, dest, plat, status, svc.atoc_name, svc.service_uid,
+        )
 
     console.print(table)
 
@@ -144,7 +151,10 @@ def format_service(console: Console, response: ServiceResponse) -> None:
         # Determine dep or arr time
         booked = _booked_dep_time(loc) or _booked_arr_time(loc)
         realtime = _departure_time(loc) or _arrival_time(loc)
-        lateness = loc.realtime_gbtt_departure_lateness or loc.realtime_gbtt_arrival_lateness
+        lateness = (
+            loc.realtime_gbtt_departure_lateness
+            or loc.realtime_gbtt_arrival_lateness
+        )
 
         # Time coloring
         if lateness is None or lateness == 0:

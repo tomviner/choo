@@ -1,0 +1,128 @@
+<h2>How do users navigate between views?</h2>
+<p class="subtitle">Each option shows the same scenario: you want trains from Highbury to Moorgate</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Explicit Commands</h3>
+      <p>User picks the view they want upfront</p>
+      <pre style="background:#0d1117;padding:14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.6;color:#e2e8f0;overflow-x:auto;">
+<span style="color:#94a3b8;">$</span> tt next home work
+
+<span style="color:#6ee7b7;">  Highbury & Islington → Moorgate</span>
+<span style="color:#f472b6;">  ❶</span> 18:42  Plat 2  <span style="color:#6ee7b7;">On time</span>   (6 min)
+<span style="color:#f472b6;">  ❷</span> 18:49  Plat 2  <span style="color:#6ee7b7;">On time</span>   (13 min)
+<span style="color:#f472b6;">  ❸</span> 18:57  Plat 1  <span style="color:#fde68a;">+2 min</span>   (21 min)
+
+<span style="color:#94a3b8;">$</span> tt board home
+
+<span style="color:#6ee7b7;">  Highbury & Islington — Departures</span>
+  TIME   DEST          PLAT  STATUS     OPERATOR
+  18:42  Moorgate       2    <span style="color:#6ee7b7;">On time</span>    Northern
+  18:45  New Barnet     1    <span style="color:#6ee7b7;">On time</span>    Northern
+  18:49  Moorgate       2    <span style="color:#6ee7b7;">On time</span>    Northern
+  18:52  Welwyn G.C.    1    <span style="color:#fde68a;">+3 min</span>     Northern
+  18:57  Moorgate       1    <span style="color:#fde68a;">+2 min</span>     Northern
+  ...
+
+<span style="color:#94a3b8;">$</span> tt service G54821
+
+<span style="color:#6ee7b7;">  G54821 — Northern — 14 Mar 2026</span>
+<span style="color:#94a3b8;">  High Barnet → Moorgate</span>
+
+  High Barnet      dep 18:20  <span style="color:#6ee7b7;">18:20</span>
+  Totteridge       dep 18:24  <span style="color:#6ee7b7;">18:24</span>
+  Woodside Park    dep 18:27  <span style="color:#6ee7b7;">18:27</span>
+  ...
+  Highbury & Isl.  dep 18:42  <span style="color:#6ee7b7;">18:42</span>  ◀ <span style="color:#38bdf8;">AT PLATFORM</span>
+  Essex Road       dep 18:44
+  Old Street       dep 18:47
+  Moorgate         arr 18:49</pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Predictable — you get what you ask for</li><li>Easy to document</li><li>Scriptable — each command is self-contained</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>User must know all 3 commands</li><li>Drilling into a service means copy-pasting the UID</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Interactive Drill-Down</h3>
+      <p>Start with a board, use arrow keys / numbers to drill into a service</p>
+      <pre style="background:#0d1117;padding:14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.6;color:#e2e8f0;overflow-x:auto;">
+<span style="color:#94a3b8;">$</span> tt home work
+
+<span style="color:#6ee7b7;">  Highbury & Islington → Moorgate</span>
+<span style="color:#334155;">  ───────────────────────────────────</span>
+  <span style="color:#f472b6;">▸</span> 18:42  Plat 2  <span style="color:#6ee7b7;">On time</span>   (6 min)
+    18:49  Plat 2  <span style="color:#6ee7b7;">On time</span>   (13 min)
+    18:57  Plat 1  <span style="color:#fde68a;">+2 min</span>   (21 min)
+    19:04  Plat 2  <span style="color:#6ee7b7;">On time</span>   (28 min)
+<span style="color:#334155;">  ───────────────────────────────────</span>
+  <span style="color:#94a3b8;">↑↓ navigate  enter: details  q: quit</span>
+
+<span style="color:#94a3b8;">  [user presses Enter on 18:42]</span>
+
+<span style="color:#6ee7b7;">  G54821 — Northern — 14 Mar 2026</span>
+<span style="color:#94a3b8;">  High Barnet → Moorgate</span>
+
+  High Barnet      dep 18:20  <span style="color:#6ee7b7;">18:20</span>
+  Totteridge       dep 18:24  <span style="color:#6ee7b7;">18:24</span>
+  ...
+  Highbury & Isl.  dep 18:42  <span style="color:#6ee7b7;">18:42</span>  ◀ <span style="color:#38bdf8;">AT PLATFORM</span>
+  Old Street       dep 18:47
+  Moorgate         arr 18:49
+<span style="color:#334155;">  ───────────────────────────────────</span>
+  <span style="color:#94a3b8;">esc: back to list  q: quit</span></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Seamless — no UID copy-paste</li><li>Discoverable — one command does everything</li><li>Feels like a real app</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Not scriptable / pipeable</li><li>Harder to implement (TUI)</li><li>Can't use in non-interactive contexts</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Smart Default + Flags</h3>
+      <p>One command, output adapts. Flags to change view. Numbered rows for drill-down.</p>
+      <pre style="background:#0d1117;padding:14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.6;color:#e2e8f0;overflow-x:auto;">
+<span style="color:#94a3b8;"># Two stations? You get "next 3"</span>
+<span style="color:#94a3b8;">$</span> tt home work
+
+<span style="color:#6ee7b7;">  Highbury & Islington → Moorgate</span>
+  <span style="color:#64748b;">[1]</span> 18:42  Plat 2  <span style="color:#6ee7b7;">On time</span>   (6 min)
+  <span style="color:#64748b;">[2]</span> 18:49  Plat 2  <span style="color:#6ee7b7;">On time</span>   (13 min)
+  <span style="color:#64748b;">[3]</span> 18:57  Plat 1  <span style="color:#fde68a;">+2 min</span>   (21 min)
+
+<span style="color:#94a3b8;"># One station? You get the board</span>
+<span style="color:#94a3b8;">$</span> tt home
+
+<span style="color:#6ee7b7;">  Highbury & Islington — Departures</span>
+  <span style="color:#64748b;">[1]</span> 18:42  Moorgate       Plat 2  <span style="color:#6ee7b7;">On time</span>
+  <span style="color:#64748b;">[2]</span> 18:45  New Barnet     Plat 1  <span style="color:#6ee7b7;">On time</span>
+  <span style="color:#64748b;">[3]</span> 18:49  Moorgate       Plat 2  <span style="color:#6ee7b7;">On time</span>
+  <span style="color:#64748b;">[4]</span> 18:52  Welwyn G.C.    Plat 1  <span style="color:#fde68a;">+3 min</span>
+  ...
+
+<span style="color:#94a3b8;"># Drill into row [1] by number</span>
+<span style="color:#94a3b8;">$</span> tt home 1
+<span style="color:#94a3b8;"># or by service UID directly</span>
+<span style="color:#94a3b8;">$</span> tt service G54821
+
+<span style="color:#6ee7b7;">  G54821 — Northern — 14 Mar 2026</span>
+  ...full calling pattern...
+
+<span style="color:#94a3b8;"># Override density</span>
+<span style="color:#94a3b8;">$</span> tt home work --all      <span style="color:#94a3b8;"># force board view</span>
+<span style="color:#94a3b8;">$</span> tt home --arrivals      <span style="color:#94a3b8;"># arrival board</span>
+<span style="color:#94a3b8;">$</span> tt home work --at 14:30 <span style="color:#94a3b8;"># next 3 around 2:30pm</span></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Minimal typing — smart about what you want</li><li>Numbered rows enable "tt home 1" drill-down</li><li>Still scriptable (non-interactive)</li><li>One mental model: "tt [from] [to?]"</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>"tt home 1" needs state — remembers last query</li><li>Magic behaviour needs good --help</li><li>Row numbers could conflict with other args</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

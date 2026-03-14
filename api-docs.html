@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTT Pull API – Visual Reference</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --accent: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --code-bg: #0d1117;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; padding: 2rem; }
+  h1 { text-align: center; font-size: 2rem; margin-bottom: .25rem; }
+  .subtitle { text-align: center; color: var(--muted); margin-bottom: 2.5rem; font-size: .95rem; }
+  .subtitle a { color: var(--accent); text-decoration: none; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .card h2 { font-size: 1.1rem; margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
+  .card.full { grid-column: 1 / -1; }
+
+  .tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .tag-get { background: #065f46; color: #6ee7b7; }
+  .tag-req { background: #7c2d12; color: #fdba74; }
+  .tag-opt { background: #1e3a5f; color: #7dd3fc; }
+  .tag-enum { background: #4c1d95; color: #c4b5fd; }
+
+  .endpoint { background: var(--code-bg); border-radius: 8px; padding: .75rem 1rem; margin-bottom: .75rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: .85rem; overflow-x: auto; }
+  .endpoint .method { color: #6ee7b7; font-weight: 700; margin-right: .5rem; }
+  .endpoint .path { color: #e2e8f0; }
+  .endpoint .param { color: var(--accent); }
+  .endpoint .optional { color: var(--accent4); opacity: .8; }
+
+  .example { background: var(--code-bg); border-radius: 6px; padding: .5rem .75rem; margin: .35rem 0; font-family: monospace; font-size: .8rem; color: var(--muted); }
+  .example .val { color: var(--accent3); }
+
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; color: var(--muted); font-weight: 600; padding: .4rem .5rem; border-bottom: 1px solid var(--border); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+  td { padding: .4rem .5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  td:first-child { font-family: monospace; color: var(--accent); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .type { color: var(--accent2); font-family: monospace; font-size: .8rem; }
+
+  .model-group { margin-bottom: 1.25rem; }
+  .model-group h3 { font-size: .9rem; color: var(--accent3); margin-bottom: .4rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
+
+  .flow { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; padding: 1rem 0; }
+  .flow-box { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1.25rem; text-align: center; min-width: 140px; }
+  .flow-box .label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .flow-box .value { font-family: monospace; font-size: .9rem; margin-top: .2rem; }
+  .flow-arrow { font-size: 1.5rem; color: var(--accent); }
+
+  .enum-list { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; }
+  .enum-val { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-family: monospace; font-size: .75rem; color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<h1>RealTimeTrains Pull API</h1>
+<p class="subtitle">
+  Base: <code>https://api.rtt.io/api/v1/json/</code> &nbsp;|&nbsp;
+  Auth: HTTP Basic &nbsp;|&nbsp;
+  <a href="https://www.realtimetrains.co.uk/about/developer/pull/docs/" target="_blank">Official Docs</a>
+</p>
+
+<!-- Auth flow -->
+<div class="grid">
+
+<div class="card full">
+  <h2>Request Flow</h2>
+  <div class="flow">
+    <div class="flow-box">
+      <div class="label">Client</div>
+      <div class="value">SDK</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">
+      <div class="label">Auth</div>
+      <div class="value" style="color:var(--accent4)">Basic user:pass</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">
+      <div class="label">API</div>
+      <div class="value" style="color:var(--accent)">api.rtt.io</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-box">
+      <div class="label">Response</div>
+      <div class="value" style="color:var(--accent3)">JSON</div>
+    </div>
+  </div>
+</div>
+
+<!-- Location endpoint -->
+<div class="card">
+  <h2><span class="tag tag-get">GET</span> Location Search</h2>
+
+  <div class="endpoint">
+    <span class="method">GET</span>
+    <span class="path">/search/</span><span class="param">{station}</span><span class="optional">{/to/toStation}</span><span class="optional">{/yyyy/mm/dd}</span><span class="optional">{/HHMM}</span><span class="optional">{/arrivals}</span>
+  </div>
+
+  <table>
+    <tr><th>Parameter</th><th>Type</th><th></th></tr>
+    <tr><td>station</td><td><span class="type">str</span> CRS code</td><td><span class="tag tag-req">required</span></td></tr>
+    <tr><td>toStation</td><td><span class="type">str</span> CRS code</td><td><span class="tag tag-opt">optional</span></td></tr>
+    <tr><td>date</td><td><span class="type">date</span> yyyy/mm/dd</td><td><span class="tag tag-opt">optional</span></td></tr>
+    <tr><td>time</td><td><span class="type">str</span> HHMM</td><td><span class="tag tag-opt">optional</span></td></tr>
+    <tr><td>arrivals</td><td><span class="type">flag</span></td><td><span class="tag tag-opt">optional</span></td></tr>
+  </table>
+
+  <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Examples:</p>
+  <div class="example">/search/<span class="val">HIB</span></div>
+  <div class="example">/search/<span class="val">HIB</span>/to/<span class="val">BHM</span></div>
+  <div class="example">/search/<span class="val">HIB</span>/<span class="val">2026/03/13</span>/<span class="val">1430</span></div>
+  <div class="example">/search/<span class="val">HIB</span>/<span class="val">2026/03/13</span>/arrivals</div>
+</div>
+
+<!-- Service endpoint -->
+<div class="card">
+  <h2><span class="tag tag-get">GET</span> Service Information</h2>
+
+  <div class="endpoint">
+    <span class="method">GET</span>
+    <span class="path">/service/</span><span class="param">{serviceUid}</span><span class="path">/</span><span class="param">{yyyy/mm/dd}</span>
+  </div>
+
+  <table>
+    <tr><th>Parameter</th><th>Type</th><th></th></tr>
+    <tr><td>serviceUid</td><td><span class="type">str</span> <code>[A-Z]\d{5}</code></td><td><span class="tag tag-req">required</span></td></tr>
+    <tr><td>date</td><td><span class="type">date</span> yyyy/mm/dd</td><td><span class="tag tag-req">required</span></td></tr>
+  </table>
+
+  <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Example:</p>
+  <div class="example">/service/<span class="val">A12345</span>/<span class="val">2026/03/13</span></div>
+
+  <div style="margin-top:1rem;">
+    <p style="font-size:.8rem;color:var(--muted);">Returns the full calling pattern for a service: every stop with scheduled and realtime times, platforms, lateness, and cancellation info.</p>
+  </div>
+</div>
+
+<!-- LocationResponse model -->
+<div class="card">
+  <h2 style="color:var(--accent3)">LocationResponse</h2>
+
+  <div class="model-group">
+    <table>
+      <tr><th>Field</th><th>Type</th></tr>
+      <tr><td>location</td><td><span class="type">StationSummary</span></td></tr>
+      <tr><td>filter</td><td><span class="type">StationFilter?</span></td></tr>
+      <tr><td>services</td><td><span class="type">LocationService[]</span></td></tr>
+    </table>
+  </div>
+
+  <div class="model-group">
+    <h3>LocationService</h3>
+    <table>
+      <tr><td>serviceUid</td><td><span class="type">str</span></td></tr>
+      <tr><td>runDate</td><td><span class="type">date</span></td></tr>
+      <tr><td>trainIdentity</td><td><span class="type">str?</span></td></tr>
+      <tr><td>atocCode / atocName</td><td><span class="type">str</span></td></tr>
+      <tr><td>serviceType</td><td><span class="type">ServiceType</span></td></tr>
+      <tr><td>isPassenger</td><td><span class="type">bool</span></td></tr>
+      <tr><td>origin / destination</td><td><span class="type">Pair[]?</span></td></tr>
+      <tr><td>countdownMinutes</td><td><span class="type">int?</span></td></tr>
+      <tr><td>locationDetail</td><td><span class="type">LocationEvent</span></td></tr>
+    </table>
+  </div>
+
+  <div class="model-group">
+    <h3>StationSummary</h3>
+    <table>
+      <tr><td>name</td><td><span class="type">str</span></td></tr>
+      <tr><td>crs</td><td><span class="type">str?</span></td></tr>
+      <tr><td>tiploc</td><td><span class="type">str?</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ServiceResponse model -->
+<div class="card">
+  <h2 style="color:var(--accent3)">ServiceResponse</h2>
+
+  <div class="model-group">
+    <table>
+      <tr><th>Field</th><th>Type</th></tr>
+      <tr><td>serviceUid</td><td><span class="type">str</span></td></tr>
+      <tr><td>runDate</td><td><span class="type">date</span></td></tr>
+      <tr><td>serviceType</td><td><span class="type">ServiceType</span></td></tr>
+      <tr><td>isPassenger</td><td><span class="type">bool</span></td></tr>
+      <tr><td>trainIdentity</td><td><span class="type">str?</span></td></tr>
+      <tr><td>powerType</td><td><span class="type">str?</span></td></tr>
+      <tr><td>trainClass</td><td><span class="type">str?</span></td></tr>
+      <tr><td>atocCode / atocName</td><td><span class="type">str</span></td></tr>
+      <tr><td>origin</td><td><span class="type">Pair[]</span></td></tr>
+      <tr><td>destination</td><td><span class="type">Pair[]</span></td></tr>
+      <tr><td>locations</td><td><span class="type">LocationEvent[]</span></td></tr>
+    </table>
+  </div>
+
+  <div class="model-group">
+    <h3>Pair (origin/destination)</h3>
+    <table>
+      <tr><td>tiploc</td><td><span class="type">str</span></td></tr>
+      <tr><td>description</td><td><span class="type">str</span></td></tr>
+      <tr><td>workingTime</td><td><span class="type">str?</span></td></tr>
+      <tr><td>publicTime</td><td><span class="type">str?</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- LocationEvent (shared model, full width) -->
+<div class="card full">
+  <h2 style="color:var(--accent3)">LocationEvent <span style="font-weight:400;font-size:.8rem;color:var(--muted)">(used by both endpoints)</span></h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+    <div class="model-group">
+      <h3>Scheduled Times</h3>
+      <table>
+        <tr><td>wttBookedArrival</td><td><span class="type">str?</span></td></tr>
+        <tr><td>wttBookedDeparture</td><td><span class="type">str?</span></td></tr>
+        <tr><td>wttBookedPass</td><td><span class="type">str?</span></td></tr>
+        <tr><td>gbttBookedArrival</td><td><span class="type">str?</span></td></tr>
+        <tr><td>gbttBookedDeparture</td><td><span class="type">str?</span></td></tr>
+      </table>
+    </div>
+
+    <div class="model-group">
+      <h3>Realtime</h3>
+      <table>
+        <tr><td>realtimeArrival</td><td><span class="type">str?</span></td></tr>
+        <tr><td>realtimeDeparture</td><td><span class="type">str?</span></td></tr>
+        <tr><td>realtimePass</td><td><span class="type">str?</span></td></tr>
+        <tr><td>realtimeActivated</td><td><span class="type">bool</span></td></tr>
+        <tr><td>*Actual</td><td><span class="type">bool?</span></td></tr>
+        <tr><td>*NoReport</td><td><span class="type">bool?</span></td></tr>
+      </table>
+    </div>
+
+    <div class="model-group">
+      <h3>Lateness</h3>
+      <table>
+        <tr><td>realtimeWttArrivalLateness</td><td><span class="type">int?</span></td></tr>
+        <tr><td>realtimeGbttArrivalLateness</td><td><span class="type">int?</span></td></tr>
+        <tr><td>realtimeWttDepartureLateness</td><td><span class="type">int?</span></td></tr>
+        <tr><td>realtimeGbttDepartureLateness</td><td><span class="type">int?</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-top:.5rem;">
+    <div class="model-group">
+      <h3>Location</h3>
+      <table>
+        <tr><td>tiploc</td><td><span class="type">str</span></td></tr>
+        <tr><td>crs</td><td><span class="type">str?</span></td></tr>
+        <tr><td>description</td><td><span class="type">str?</span></td></tr>
+      </table>
+    </div>
+
+    <div class="model-group">
+      <h3>Platform &amp; Line</h3>
+      <table>
+        <tr><td>platform</td><td><span class="type">str?</span></td></tr>
+        <tr><td>platformConfirmed</td><td><span class="type">bool?</span></td></tr>
+        <tr><td>platformChanged</td><td><span class="type">bool?</span></td></tr>
+        <tr><td>line</td><td><span class="type">str?</span></td></tr>
+        <tr><td>path</td><td><span class="type">str?</span></td></tr>
+      </table>
+    </div>
+
+    <div class="model-group">
+      <h3>Cancellation</h3>
+      <table>
+        <tr><td>cancelReasonCode</td><td><span class="type">str?</span></td></tr>
+        <tr><td>cancelReasonShortText</td><td><span class="type">str?</span></td></tr>
+        <tr><td>cancelReasonLongText</td><td><span class="type">str?</span></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Enums -->
+<div class="card full">
+  <h2><span class="tag tag-enum">enums</span> Enumerated Values</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;">
+    <div>
+      <h3 style="font-size:.85rem;color:var(--accent2);margin-bottom:.4rem;">ServiceType</h3>
+      <div class="enum-list">
+        <span class="enum-val">train</span>
+        <span class="enum-val">bus</span>
+        <span class="enum-val">ship</span>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:.85rem;color:var(--accent2);margin-bottom:.4rem;">DisplayAs</h3>
+      <div class="enum-list">
+        <span class="enum-val">CALL</span>
+        <span class="enum-val">PASS</span>
+        <span class="enum-val">ORIGIN</span>
+        <span class="enum-val">DESTINATION</span>
+        <span class="enum-val">STARTS</span>
+        <span class="enum-val">TERMINATES</span>
+        <span class="enum-val">CANCELLED_CALL</span>
+        <span class="enum-val">CANCELLED_PASS</span>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:.85rem;color:var(--accent2);margin-bottom:.4rem;">ServiceLocationState</h3>
+      <div class="enum-list">
+        <span class="enum-val">APPR_STAT</span>
+        <span class="enum-val">APPR_PLAT</span>
+        <span class="enum-val">AT_PLAT</span>
+        <span class="enum-val">DEP_PREP</span>
+        <span class="enum-val">DEP_READY</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /grid -->
+
+</body>
+</html>

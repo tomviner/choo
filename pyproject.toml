@@ -63,7 +63,7 @@ lines-after-imports = 2
 
 [tool.coverage.run]
 branch = true
-source = ["traintimes"]
+source = ["traintimes", "choo"]
 
 [tool.coverage.report]
 show_missing = true

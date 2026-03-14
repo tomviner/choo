@@ -1,0 +1,124 @@
+<h2>Question &amp; Answer Types</h2>
+<p class="subtitle">What can people ask, given the RTT API as our data source?</p>
+
+<div class="section">
+  <h3>The RTT API gives us two data shapes</h3>
+  <div style="display:flex;gap:16px;margin:12px 0;">
+    <div style="flex:1;background:#1a1a2e;border:1px solid #334155;border-radius:8px;padding:16px;">
+      <div style="color:#38bdf8;font-weight:700;font-size:14px;margin-bottom:6px;">Location Search</div>
+      <div style="color:#94a3b8;font-size:13px;">List of services at a station, optionally filtered to another station. Includes: times, platform, operator, lateness, countdown.</div>
+    </div>
+    <div style="flex:1;background:#1a1a2e;border:1px solid #334155;border-radius:8px;padding:16px;">
+      <div style="color:#a78bfa;font-weight:700;font-size:14px;margin-bottom:6px;">Service Detail</div>
+      <div style="color:#94a3b8;font-size:13px;">Full calling pattern for one train. Every stop with scheduled &amp; realtime times, platforms, cancellation info.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Question Types &amp; What Answers They Need</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;">
+    <thead>
+      <tr style="border-bottom:2px solid #334155;">
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Question a human asks</th>
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Answer shape</th>
+        <th style="text-align:left;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">API call</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"When's the next train from Highbury to Moorgate?"</td>
+        <td style="padding:10px 8px;"><span style="background:#065f46;color:#6ee7b7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">A → B</span> single best match</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(A, to=B) → first result</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"What trains go from Highbury to Moorgate this afternoon?"</td>
+        <td style="padding:10px 8px;"><span style="background:#065f46;color:#6ee7b7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">A → B</span> list</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(A, to=B, time)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"What's leaving from Kings Cross?"</td>
+        <td style="padding:10px 8px;"><span style="background:#1e3a5f;color:#7dd3fc;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">A → ...</span> list</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(A)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"What's arriving at Paddington?"</td>
+        <td style="padding:10px 8px;"><span style="background:#4c1d95;color:#c4b5fd;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">... → B</span> list</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(B, arrivals=True)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"Is the 14:30 from Kings Cross on time?"</td>
+        <td style="padding:10px 8px;"><span style="background:#7c2d12;color:#fdba74;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Status</span> single service</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(A, time) → match → Service(uid)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"What platform is my train?"</td>
+        <td style="padding:10px 8px;"><span style="background:#7c2d12;color:#fdba74;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Status</span> single fact</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location or Service → platform field</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"Where is train G12345 right now?"</td>
+        <td style="padding:10px 8px;"><span style="background:#713f12;color:#fde68a;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Journey</span> calling pattern</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Service(uid, date)</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px 8px;">"Show me the full route of this train"</td>
+        <td style="padding:10px 8px;"><span style="background:#713f12;color:#fde68a;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Journey</span> calling pattern</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Service(uid, date)</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 8px;">"How are trains running on the Northern line today?"</td>
+        <td style="padding:10px 8px;"><span style="background:#581c87;color:#d8b4fe;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Overview</span> aggregate</td>
+        <td style="padding:10px 8px;color:#94a3b8;font-size:12px;">Location(A) → aggregate lateness across services</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>Answer Type Taxonomy</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+    <div style="background:#1a1a2e;border-left:3px solid #6ee7b7;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#6ee7b7;font-weight:700;font-size:14px;">A → B (Route)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Full origin-destination pair. The most common real question. Can be a list (timetable) or single (next train).</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: Location(station, to_station)</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #7dd3fc;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#7dd3fc;font-weight:700;font-size:14px;">A → ... (Departures)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Half-answer: what's leaving from here? User browses destinations. Board-style display.</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: Location(station)</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #c4b5fd;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#c4b5fd;font-weight:700;font-size:14px;">... → B (Arrivals)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Half-answer: what's coming in? "When does Dad's train get here?" Meeting someone.</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: Location(station, arrivals=True)</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #fde68a;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#fde68a;font-weight:700;font-size:14px;">Journey (Calling Pattern)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Full route of one train: every stop, with progress indicator showing where it is now.</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: Service(uid, date)</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #fdba74;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#fdba74;font-weight:700;font-size:14px;">Status (Single Fact)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Platform, delay, on-time — extracted from either endpoint. Often a follow-up to a list.</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: derived from Location or Service</div>
+    </div>
+    <div style="background:#1a1a2e;border-left:3px solid #d8b4fe;padding:14px;border-radius:0 8px 8px 0;">
+      <div style="color:#d8b4fe;font-weight:700;font-size:14px;">Overview (Aggregate)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Computed from multiple services: "how's it running today?" Average lateness, cancellation rate.</div>
+      <div style="color:#64748b;font-size:11px;margin-top:6px;">API: Location(station) → compute stats</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Key Insight</h3>
+  <div style="background:#1a1a2e;border:1px solid #334155;border-radius:8px;padding:16px;margin-top:8px;">
+    <p style="color:#e2e8f0;font-size:14px;line-height:1.6;">
+      The API gives us <strong>two primitives</strong> (location list + service detail), but users think in <strong>six answer types</strong>. The CLI's job is to bridge that gap — translating human questions into API calls and presenting the right answer shape.
+    </p>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      Some answers need <strong>chaining</strong>: "is the 14:30 on time?" requires a location search to find the service, then a service query for detail. The CLI should handle this transparently.
+    </p>
+  </div>
+</div>
