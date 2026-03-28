@@ -36,9 +36,6 @@ app = typer.Typer(
     cls=_DefaultGroup,
 )
 
-# Suppress debug logging from requests-cache and other libraries
-logging.getLogger("requests_cache").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 _DAY_NAMES = {
     "monday": 0,

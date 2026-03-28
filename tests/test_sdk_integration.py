@@ -10,8 +10,8 @@ from traintimes.sdk import Location, ResponseError, Service
 
 
 pytestmark = pytest.mark.skipif(
-    "RTT_AUTH" not in os.environ,
-    reason="Integration tests require valid RTT_AUTH credentials",
+    "RTT_AUTH" not in os.environ and "CHOO_AUTH" not in os.environ,
+    reason="Integration tests require CHOO_AUTH or RTT_AUTH credentials",
 )
 
 

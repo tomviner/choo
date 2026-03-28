@@ -1,7 +1,7 @@
 [project]
-name = "traintimes"
-description = "A Python SDK for realtimetrains' API"
-version = "0.1.0.dev0"
+name = "choo"
+description = "UK train times from your terminal"
+version = "0.1.0"
 readme = "README.rst"
 requires-python = ">=3.10"
 authors = [
@@ -10,7 +10,7 @@ authors = [
 dependencies = [
   "purl>=1.1",
   "requests>=2.31",
-  "requests-cache>=1.2",
+
   "python-dotenv>=1",
   "pydantic>=2.7",
   "typer>=0.9",
@@ -23,7 +23,7 @@ dependencies = [
 choo = "choo.app:app"
 
 [project.urls]
-Homepage = "https://github.com/tomviner/traintimes"
+Homepage = "https://github.com/tomviner/choo"
 
 [dependency-groups]
 test = [
