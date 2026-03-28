@@ -52,8 +52,7 @@ def set_alias(name: str, crs: str) -> None:
     """Save an alias to the config file."""
     if name.lower() in RESERVED_NAMES:
         raise ValueError(
-            f"'{name}' is a reserved command name. "
-            f"Choose a different alias name."
+            f"'{name}' is a reserved command name. " f"Choose a different alias name."
         )
     config_dir = _config_dir()
     config_dir.mkdir(parents=True, exist_ok=True)

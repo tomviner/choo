@@ -65,6 +65,23 @@ def test_next_explicit(mock_location):
     assert "14:3" in result.output
 
 
+def test_next_defaults_to_aliases(mock_location, monkeypatch):
+    """next without FROM/TO uses home/work aliases."""
+    monkeypatch.setenv("CHOO_ALIAS_HOME", "HIB")
+    monkeypatch.setenv("CHOO_ALIAS_WORK", "MOG")
+    result = runner.invoke(app, ["next", "--on", "today"])
+    assert result.exit_code == 0
+
+
+def test_next_no_args_no_aliases(monkeypatch, tmp_path):
+    """next without args or aliases gives helpful error."""
+    monkeypatch.setenv("CHOO_AUTH", "test:test")
+    monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+    result = runner.invoke(app, ["next"])
+    assert result.exit_code == 1
+    assert "alias" in result.output.lower()
+
+
 def test_next_json(mock_location):
     result = runner.invoke(app, ["next", "HIB", "MOG", "--json"])
     assert result.exit_code == 0
@@ -100,6 +117,12 @@ def test_version():
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
     assert "choo" in result.output
+
+
+def test_verbose_flag(mock_location):
+    """--verbose enables debug logging."""
+    result = runner.invoke(app, ["--verbose", "next", "HIB", "MOG"])
+    assert result.exit_code == 0
 
 
 SAMPLE_SERVICE_JSON = {

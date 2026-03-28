@@ -98,9 +98,7 @@ def format_next(
         cancelled = evt.display_as in _CANCEL if evt.display_as else False
         status = _status_text(lateness, cancelled)
         countdown = (
-            f"{svc.countdown_minutes}m"
-            if svc.countdown_minutes is not None
-            else ""
+            f"{svc.countdown_minutes}m" if svc.countdown_minutes is not None else ""
         )
 
         line = Text()
@@ -135,7 +133,12 @@ def format_board(console: Console, response: LocationResponse) -> None:
         status = _status_text(lateness, cancelled)
 
         table.add_row(
-            dep, dest, plat, status, svc.atoc_name, svc.service_uid,
+            dep,
+            dest,
+            plat,
+            status,
+            svc.atoc_name,
+            svc.service_uid,
         )
 
     console.print(table)
@@ -154,8 +157,7 @@ def format_service(console: Console, response: ServiceResponse) -> None:
         booked = _booked_dep_time(loc) or _booked_arr_time(loc)
         realtime = _departure_time(loc) or _arrival_time(loc)
         lateness = (
-            loc.realtime_gbtt_departure_lateness
-            or loc.realtime_gbtt_arrival_lateness
+            loc.realtime_gbtt_departure_lateness or loc.realtime_gbtt_arrival_lateness
         )
 
         # Time coloring

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json as _json
+import logging
 from typing import Optional
 
 import typer
@@ -34,6 +35,10 @@ app = typer.Typer(
     invoke_without_command=True,
     cls=_DefaultGroup,
 )
+
+# Suppress debug logging from requests-cache and other libraries
+logging.getLogger("requests_cache").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 _DAY_NAMES = {
     "monday": 0,
@@ -83,9 +88,7 @@ def _resolve_or_exit(station: str) -> str:
         raise typer.Exit(code=1)
 
 
-def _build_when(
-    at: str | None, on: str | None
-) -> _dt.date | _dt.datetime | None:
+def _build_when(at: str | None, on: str | None) -> _dt.date | _dt.datetime | None:
     today = _dt.date.today()
     date_part: _dt.date | None = None
     time_part: _dt.time | None = None
@@ -167,6 +170,7 @@ def _run_next(
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show debug logging"),
     version: bool = typer.Option(
         False,
         "--version",
@@ -176,6 +180,8 @@ def main(
     ),
 ):
     """UK train times from your terminal."""
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
     if ctx.invoked_subcommand is not None:
         return
     _check_auth()
@@ -193,8 +199,8 @@ def main(
 
 @app.command("next")
 def next_cmd(
-    from_station: str = typer.Argument(..., metavar="FROM"),
-    to_station: str = typer.Argument(..., metavar="TO"),
+    from_station: Optional[str] = typer.Argument(None, metavar="FROM"),
+    to_station: Optional[str] = typer.Argument(None, metavar="TO"),
     at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
     on: Optional[str] = typer.Option(
         None, "--on", "-d", help="Date (today/tomorrow/day name/ISO)"
@@ -204,9 +210,26 @@ def next_cmd(
     json: bool = typer.Option(False, "--json", help="Output JSON"),
 ):
     """Show next trains between two stations."""
+    if from_station is None or to_station is None:
+        aliases = get_aliases()
+        from_station = from_station or aliases.get("home")
+        to_station = to_station or aliases.get("work")
+        if not from_station or not to_station:
+            stderr_console().print(
+                "Missing FROM and/or TO. Set aliases or provide stations:\n"
+                "  choo next KGX YRK\n"
+                "  choo alias set home KGX\n"
+                "  choo alias set work YRK"
+            )
+            raise typer.Exit(code=1)
     _run_next(
-        from_station, to_station,
-        at=at, on=on, count=count, arrivals=arrivals, json=json,
+        from_station,
+        to_station,
+        at=at,
+        on=on,
+        count=count,
+        arrivals=arrivals,
+        json=json,
     )
 
 
