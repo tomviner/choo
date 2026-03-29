@@ -132,6 +132,9 @@ def _print_interpretation(
         parts.append(f", {when:%A} at {when:%H:%M}")
     elif isinstance(when, _dt.date):
         parts.append(f", {when:%A %d %b}")
+    else:
+        now = _dt.datetime.now()
+        parts.append(f", {now:%A} at {now:%H:%M}")
     con.print("".join(parts))
 
 
@@ -156,7 +159,22 @@ def _run_next(
         stderr_console().print(f"API error: {exc.message}")
         raise typer.Exit(code=1)
 
+    # Filter to requested count
     response.services = response.services[:count]
+
+    # If no services and no explicit date, try tomorrow
+    if not response.services and on is None:
+        tomorrow = _dt.date.today() + _dt.timedelta(days=1)
+        try:
+            response = Location(
+                from_crs, to_crs, when=tomorrow, arrivals=arrivals
+            ).get()
+        except ResponseError:
+            pass
+        if response.services:
+            response.services = response.services[:count]
+            stderr_console().print("No more trains today.")
+            _print_interpretation(from_crs, to_crs, tomorrow)
 
     if json:
         typer.echo(_json.dumps(response.model_dump(by_alias=True), default=str))

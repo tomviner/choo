@@ -400,6 +400,70 @@ class TestDefaultCommand:
         assert result.exit_code == 1
 
 
+EMPTY_LOCATION_JSON = {
+    "location": {"name": "Highbury & Islington", "crs": "HIB"},
+    "services": None,
+}
+
+
+class TestTomorrowFallback:
+    def test_shows_tomorrow_trains(self, monkeypatch):
+        """No trains today → shows tomorrow's trains."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        call_count = {"n": 0}
+
+        def route_response(request, context):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return EMPTY_LOCATION_JSON
+            return SAMPLE_LOCATION_JSON
+
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=route_response)
+            result = runner.invoke(app, ["next", "HIB", "MOG"])
+        assert result.exit_code == 0
+        assert "No more trains today" in result.output
+        assert "14:3" in result.output  # tomorrow's train time
+
+    def test_tomorrow_api_error(self, monkeypatch):
+        """No trains today, tomorrow API fails → just 'No trains found'."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        call_count = {"n": 0}
+
+        def route_response(request, context):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return EMPTY_LOCATION_JSON
+            context.status_code = 500
+            context.reason = "Server Error"
+            return {"error": "fail"}
+
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=route_response)
+            result = runner.invoke(app, ["next", "HIB", "MOG"])
+        assert result.exit_code == 0
+        assert "No trains found" in result.output
+
+    def test_tomorrow_also_empty(self, monkeypatch):
+        """No trains today or tomorrow → just 'No trains found'."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=EMPTY_LOCATION_JSON)
+            result = runner.invoke(app, ["next", "HIB", "MOG"])
+        assert result.exit_code == 0
+        assert "No trains found" in result.output
+
+    def test_no_fallback_when_date_specified(self, monkeypatch):
+        """With --on, don't try tomorrow."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=EMPTY_LOCATION_JSON)
+            result = runner.invoke(app, ["next", "HIB", "MOG", "--on", "today"])
+        assert result.exit_code == 0
+        assert "No trains found" in result.output
+        assert "tomorrow" not in result.output.lower()
+
+
 class TestServiceCommandExtended:
     def test_service_with_on_date(self, monkeypatch):
         monkeypatch.setenv("CHOO_AUTH", "test:test")
