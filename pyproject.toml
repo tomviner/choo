@@ -10,13 +10,13 @@ authors = [
 dependencies = [
   "purl>=1.1",
   "requests>=2.31",
-
   "python-dotenv>=1",
   "pydantic>=2.7",
   "typer>=0.9",
   "rich>=13",
   "rapidfuzz>=3",
   "platformdirs>=4",
+  "httpx>=0.28.1",
 ]
 
 [project.scripts]

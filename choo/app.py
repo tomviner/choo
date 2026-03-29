@@ -58,8 +58,9 @@ def _check_auth() -> tuple[str, str]:
     auth = get_auth()
     if auth is None:
         stderr_console().print(
-            "No API credentials found. Set CHOO_AUTH or RTT_AUTH "
-            "environment variable (format: user:password)"
+            "No API credentials found. Run [bold]choo auth[/] to set up credentials,\n"
+            "or set CHOO_AUTH / RTT_AUTH environment variable (format: user:password).\n"
+            "Register at https://api-portal.rtt.io/"
         )
         raise typer.Exit(code=1)
     return auth
@@ -344,10 +345,22 @@ def auth():
     from choo.config import _config_dir
 
     err = stderr_console()
-    err.print("  RTT API credentials setup")
     err.print()
-    err.print("  1. Register at [link]https://api.rtt.io/[/link]")
-    err.print("  2. Enter your credentials below")
+    err.print("  RTT API Credentials Setup")
+    err.print()
+    err.print("  To use choo, you need a free API token from RealTimeTrains:")
+    err.print()
+    err.print(
+        "  1. Create an account at https://www.realtimetrains.co.uk/ (if you don't have one)"
+    )
+    err.print("  2. Visit https://api-portal.rtt.io/")
+    err.print("  3. Sign in with your RTT account")
+    err.print("  4. Request an API token")
+    err.print()
+    err.print("  The API is free for personal, non-commercial use.")
+    err.print("  For commercial use, contact hello@realtimetrains.com")
+    err.print()
+    err.print("  Once you have your credentials, enter them below:")
     err.print()
 
     username = typer.prompt("  Username")
@@ -360,4 +373,41 @@ def auth():
     auth_file.chmod(0o600)
 
     console = Console()
-    console.print("\n  [green]✓ Credentials saved.[/]")
+    err.print()
+
+    # Verify credentials with a test API call
+    try:
+        import os
+
+        os.environ["CHOO_AUTH"] = f"{username}:{password}"
+        Location("PAD").get()
+        console.print("  [green]✓ Credentials saved and verified.[/]")
+    except Exception:
+        console.print("  [yellow]✓ Credentials saved but verification failed.[/]")
+        console.print("  [yellow]  Check your username and password are correct.[/]")
+
+
+# ── Stations subcommands ───────────────────────────────────────────
+
+stations_app = typer.Typer(help="Manage station data.")
+app.add_typer(stations_app, name="stations")
+
+
+@stations_app.command("update")
+def stations_update():
+    """Fetch latest station data from GitHub."""
+    from choo.stations import fetch_stations
+
+    console = Console()
+    count = fetch_stations()
+    console.print(f"  Updated {count} stations.")
+
+
+@stations_app.command("list")
+def stations_list():
+    """Show total number of loaded stations."""
+    from choo.stations import load_stations
+
+    console = Console()
+    stations = load_stations()
+    console.print(f"  {len(stations)} stations loaded.")
