@@ -233,8 +233,8 @@ def next_cmd(
 
 @app.command("board")
 def board_cmd(
-    station: str = typer.Argument(..., metavar="STATION"),
-    to: Optional[str] = typer.Option(None, "--to", help="Filter to destination"),
+    from_station: Optional[str] = typer.Argument(None, metavar="FROM"),
+    to_station: Optional[str] = typer.Argument(None, metavar="TO"),
     at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
     on: Optional[str] = typer.Option(None, "--on", "-d", help="Date"),
     arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
@@ -242,8 +242,18 @@ def board_cmd(
 ):
     """Show departure board for a station."""
     _check_auth()
-    from_crs = _resolve_or_exit(station)
-    to_crs = _resolve_or_exit(to) if to else None
+    if from_station is None:
+        aliases = get_aliases()
+        from_station = aliases.get("home")
+        if not from_station:
+            stderr_console().print(
+                "Missing FROM station. Set alias or provide station:\n"
+                "  choo board KGX\n"
+                "  choo alias set home KGX"
+            )
+            raise typer.Exit(code=1)
+    from_crs = _resolve_or_exit(from_station)
+    to_crs = _resolve_or_exit(to_station) if to_station else None
     when = _build_when(at, on)
     _print_interpretation(from_crs, to_crs, when)
 
