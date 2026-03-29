@@ -292,3 +292,15 @@ class TestErrorHandling:
         with pytest.raises(ResponseError) as exc:
             subject.get()
         assert 'response.text=' in exc.value.message
+
+    def test_ok_response_with_json_error_key(self, requests_mock):
+        """Test handling of OK response that contains an error key"""
+        subject = Location('HIB')
+        requests_mock.get(
+            subject.uri,
+            json={'error': 'Something weird', 'errcode': '999'},
+            status_code=200,
+        )
+        with pytest.raises(ResponseError) as exc:
+            subject.get()
+        assert exc.value.message == '999: Something weird'
