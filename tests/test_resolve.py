@@ -48,8 +48,8 @@ class TestResolveStation:
         assert result == "PAD"
 
     def test_fuzzy_partial_name(self):
-        result = resolve_station("Edinburgh")
-        assert result == "EDB"
+        result = resolve_station("Didcot Parkway")
+        assert result == "DID"
 
     def test_station_not_found(self):
         with pytest.raises(StationNotFound) as exc_info:
