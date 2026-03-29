@@ -2,7 +2,7 @@
 name = "choo"
 description = "UK train times from your terminal"
 version = "0.1.0"
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.10"
 authors = [
   { name = "Tom Viner", email = "traintimes@viner.tv" },
