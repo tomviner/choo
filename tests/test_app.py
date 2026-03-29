@@ -96,7 +96,8 @@ def test_no_auth(monkeypatch):
     monkeypatch.delenv("RTT_AUTH", raising=False)
     result = runner.invoke(app, ["next", "HIB", "MOG"])
     assert result.exit_code == 1
-    assert "credentials" in result.output.lower() or "CHOO_AUTH" in result.output
+    assert "choo auth" in result.output.lower() or "CHOO_AUTH" in result.output
+    assert "api-portal.rtt.io" in result.output
 
 
 def test_board(mock_location):
@@ -422,11 +423,33 @@ class TestServiceCommandExtended:
 
 
 class TestAuthCommand:
-    def test_auth_saves_credentials(self, monkeypatch, tmp_path):
+    def test_auth_saves_credentials_verified(self, monkeypatch, tmp_path):
         monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
-        result = runner.invoke(app, ["auth"], input="myuser\nmypass\n")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=SAMPLE_LOCATION_JSON)
+            result = runner.invoke(app, ["auth"], input="myuser\nmypass\n")
         assert result.exit_code == 0
-        assert "saved" in result.output.lower()
+        assert "verified" in result.output.lower()
         auth_file = tmp_path / "choo" / "auth"
         assert auth_file.exists()
         assert auth_file.read_text() == "myuser:mypass"
+
+    def test_auth_saves_credentials_verification_fails(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        with patch("choo.app.Location") as mock_loc:
+            mock_loc.return_value.get.side_effect = ResponseError("unauthorized")
+            result = runner.invoke(app, ["auth"], input="myuser\nmypass\n")
+        assert result.exit_code == 0
+        assert "saved but verification failed" in result.output.lower()
+        auth_file = tmp_path / "choo" / "auth"
+        assert auth_file.exists()
+        assert auth_file.read_text() == "myuser:mypass"
+
+    def test_auth_shows_instructions(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=SAMPLE_LOCATION_JSON)
+            result = runner.invoke(app, ["auth"], input="myuser\nmypass\n")
+        assert "api-portal.rtt.io" in result.output
+        assert "realtimetrains.co.uk" in result.output
+        assert "non-commercial" in result.output
