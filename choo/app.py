@@ -24,6 +24,9 @@ class _DefaultGroup(typer.core.TyperGroup):
         try:
             return super().resolve_command(ctx, args)
         except Exception:
+            # "choo choo" → reverse home/work route (come home!)
+            if args and args[0] == "choo":
+                return super().resolve_command(ctx, ["choo-choo", *args[1:]])
             # Unknown subcommand — treat all args as 'next' arguments
             return super().resolve_command(ctx, ["next", *args])
 
@@ -212,6 +215,28 @@ def main(
     else:
         stderr_console().print(
             "Set up 'home' and 'work' aliases to use the default command.\n"
+            "  choo alias set home <CRS>\n"
+            "  choo alias set work <CRS>"
+        )
+        raise typer.Exit(code=1)
+
+
+@app.command("choo-choo", hidden=True)
+def choo_choo_cmd(
+    at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
+    on: Optional[str] = typer.Option(None, "--on", "-d", help="Date"),
+    count: int = typer.Option(3, "--count", "-n", help="Number of results"),
+    arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
+    json: bool = typer.Option(False, "--json", help="Output JSON"),
+):
+    """Reverse commute — next trains from work to home."""
+    _check_auth()
+    aliases = get_aliases()
+    if "home" in aliases and "work" in aliases:
+        _run_next("work", "home", at=at, on=on, count=count, arrivals=arrivals, json=json)
+    else:
+        stderr_console().print(
+            "Set up 'home' and 'work' aliases:\n"
             "  choo alias set home <CRS>\n"
             "  choo alias set work <CRS>"
         )

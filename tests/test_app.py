@@ -400,6 +400,27 @@ class TestBoardTomorrowFallback:
         assert result.exit_code == 0
 
 
+class TestChooChoo:
+    def test_choo_choo_reverses_route(self, monkeypatch):
+        """choo choo = next work home (reverse commute)."""
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        monkeypatch.setenv("CHOO_ALIAS_HOME", "HIB")
+        monkeypatch.setenv("CHOO_ALIAS_WORK", "MOG")
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=SAMPLE_LOCATION_JSON)
+            result = runner.invoke(app, ["choo"])
+        assert result.exit_code == 0
+        # Should resolve work→home (MOG→HIB)
+        assert "MOG" in result.output or "14:3" in result.output
+
+    def test_choo_choo_no_aliases(self, monkeypatch, tmp_path):
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        result = runner.invoke(app, ["choo"])
+        assert result.exit_code == 1
+        assert "alias" in result.output.lower()
+
+
 class TestDefaultCommand:
     def test_default_with_aliases(self, monkeypatch, tmp_path):
         monkeypatch.setenv("CHOO_AUTH", "test:test")
