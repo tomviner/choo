@@ -57,7 +57,7 @@ class StationSummary(BaseModel):
 
     name: str
     crs: str | None = None
-    tiploc: str | None = None
+    tiploc: str | list[str] | None = None
 
 
 class StationFilter(BaseModel):
