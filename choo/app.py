@@ -286,6 +286,19 @@ def board_cmd(
         stderr_console().print(f"API error: {exc.message}")
         raise typer.Exit(code=1)
 
+    # If no services and no explicit date, try tomorrow
+    if not response.services and on is None:
+        tomorrow = _dt.date.today() + _dt.timedelta(days=1)
+        try:
+            response = Location(
+                from_crs, to_crs, when=tomorrow, arrivals=arrivals
+            ).get()
+        except ResponseError:
+            pass
+        if response.services:
+            stderr_console().print("No more trains today.")
+            _print_interpretation(from_crs, to_crs, tomorrow)
+
     if json:
         typer.echo(_json.dumps(response.model_dump(by_alias=True), default=str))
     else:

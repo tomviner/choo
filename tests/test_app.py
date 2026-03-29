@@ -365,6 +365,41 @@ class TestArrivals:
         assert result.exit_code == 0
 
 
+class TestBoardTomorrowFallback:
+    def test_board_shows_tomorrow(self, monkeypatch):
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        call_count = {"n": 0}
+
+        def route_response(request, context):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return EMPTY_LOCATION_JSON
+            return SAMPLE_LOCATION_JSON
+
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=route_response)
+            result = runner.invoke(app, ["board", "HIB"])
+        assert result.exit_code == 0
+        assert "No more trains today" in result.output
+
+    def test_board_tomorrow_api_error(self, monkeypatch):
+        monkeypatch.setenv("CHOO_AUTH", "test:test")
+        call_count = {"n": 0}
+
+        def route_response(request, context):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return EMPTY_LOCATION_JSON
+            context.status_code = 500
+            context.reason = "Server Error"
+            return {"error": "fail"}
+
+        with rm.Mocker() as m:
+            m.get(rm.ANY, json=route_response)
+            result = runner.invoke(app, ["board", "HIB"])
+        assert result.exit_code == 0
+
+
 class TestDefaultCommand:
     def test_default_with_aliases(self, monkeypatch, tmp_path):
         monkeypatch.setenv("CHOO_AUTH", "test:test")
