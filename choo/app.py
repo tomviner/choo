@@ -168,6 +168,11 @@ def _run_next(
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
+    at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
+    on: Optional[str] = typer.Option(None, "--on", "-d", help="Date"),
+    count: int = typer.Option(3, "--count", "-n", help="Number of results"),
+    arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
+    json: bool = typer.Option(False, "--json", help="Output JSON"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show debug logging"),
     version: bool = typer.Option(
         False,
@@ -185,7 +190,7 @@ def main(
     _check_auth()
     aliases = get_aliases()
     if "home" in aliases and "work" in aliases:
-        _run_next("home", "work")
+        _run_next("home", "work", at=at, on=on, count=count, arrivals=arrivals, json=json)
     else:
         stderr_console().print(
             "Set up 'home' and 'work' aliases to use the default command.\n"

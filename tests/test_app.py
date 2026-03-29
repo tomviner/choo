@@ -91,9 +91,10 @@ def test_next_json(mock_location):
     assert "services" in data
 
 
-def test_no_auth(monkeypatch):
+def test_no_auth(monkeypatch, tmp_path):
     monkeypatch.delenv("CHOO_AUTH", raising=False)
     monkeypatch.delenv("RTT_AUTH", raising=False)
+    monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
     result = runner.invoke(app, ["next", "HIB", "MOG"])
     assert result.exit_code == 1
     assert "choo auth" in result.output.lower() or "CHOO_AUTH" in result.output
