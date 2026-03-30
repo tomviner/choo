@@ -1,7 +1,7 @@
 [project]
 name = "choo"
 description = "UK train times from your terminal"
-version = "0.1.0"
+version = "0.1.1"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -39,6 +39,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
+module-name = ["choo", "traintimes"]
 
 [tool.ruff]
 target-version = "py310"
