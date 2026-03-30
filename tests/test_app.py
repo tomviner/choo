@@ -65,6 +65,11 @@ def test_next_explicit(mock_location):
     assert "14:3" in result.output
 
 
+def test_next_with_explicit_count(mock_location):
+    result = runner.invoke(app, ["next", "HIB", "MOG", "--count", "1"])
+    assert result.exit_code == 0
+
+
 def test_next_defaults_to_aliases(mock_location, monkeypatch):
     """next without FROM/TO uses home/work aliases."""
     monkeypatch.setenv("CHOO_ALIAS_HOME", "HIB")
@@ -190,34 +195,62 @@ class TestServiceCommand:
         assert data["serviceUid"] == "A12345"
 
 
-class TestAliasCommand:
-    def test_alias_set_and_list(self, monkeypatch, tmp_path):
+class TestConfigCommand:
+    def test_config_set_and_get(self, monkeypatch, tmp_path):
         monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
-        result = runner.invoke(app, ["alias", "set", "home", "HIB"])
+        result = runner.invoke(app, ["config", "alias.home", "HIB"])
         assert result.exit_code == 0
+        assert "alias.home=HIB" in result.output
 
-        result = runner.invoke(app, ["alias", "list"])
+        result = runner.invoke(app, ["config", "alias.home"])
         assert result.exit_code == 0
-        assert "home" in result.output
         assert "HIB" in result.output
 
-    def test_alias_remove(self, monkeypatch, tmp_path):
+    def test_config_list(self, monkeypatch, tmp_path):
         monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
-        runner.invoke(app, ["alias", "set", "home", "HIB"])
-        result = runner.invoke(app, ["alias", "remove", "home"])
+        runner.invoke(app, ["config", "alias.home", "HIB"])
+        runner.invoke(app, ["config", "next.count", "5"])
+        result = runner.invoke(app, ["config", "--list"])
         assert result.exit_code == 0
+        assert "alias.home=HIB" in result.output
+        assert "next.count=5" in result.output
 
-    def test_alias_reserved_name(self, monkeypatch, tmp_path):
+    def test_config_bare_lists(self, monkeypatch, tmp_path):
         monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
-        result = runner.invoke(app, ["alias", "set", "board", "HIB"])
+        runner.invoke(app, ["config", "alias.home", "HIB"])
+        result = runner.invoke(app, ["config"])
+        assert result.exit_code == 0
+        assert "alias.home=HIB" in result.output
+
+    def test_config_unset(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        runner.invoke(app, ["config", "alias.home", "HIB"])
+        result = runner.invoke(app, ["config", "--unset", "alias.home"])
+        assert result.exit_code == 0
+        assert "Unset" in result.output
+
+    def test_config_get_missing(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        result = runner.invoke(app, ["config", "nonexistent.key"])
+        assert result.exit_code == 1
+
+    def test_config_reserved_alias(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        result = runner.invoke(app, ["config", "alias.config", "HIB"])
         assert result.exit_code != 0
         assert "reserved" in result.output.lower()
 
-    def test_alias_list_empty(self, monkeypatch, tmp_path):
+    def test_config_empty_list(self, monkeypatch, tmp_path):
         monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
-        result = runner.invoke(app, ["alias", "list"])
+        result = runner.invoke(app, ["config"])
         assert result.exit_code == 0
-        assert "No aliases" in result.output
+        assert "No config" in result.output
+
+    def test_config_empty_list_flag(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("choo.config._config_dir", lambda: tmp_path / "choo")
+        result = runner.invoke(app, ["config", "--list"])
+        assert result.exit_code == 0
+        assert "No config" in result.output
 
 
 class TestResolveOrExit:
@@ -341,7 +374,6 @@ class TestNextApiError:
             result = runner.invoke(app, ["board", "HIB"])
         assert result.exit_code == 1
         assert "API error" in result.output
-
 
     def test_board_no_args_with_alias(self, monkeypatch):
         monkeypatch.setenv("CHOO_AUTH", "test:test")

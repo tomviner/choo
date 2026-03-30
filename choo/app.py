@@ -11,7 +11,15 @@ import typer
 from rich.console import Console
 
 from choo import __version__
-from choo.config import get_aliases, get_auth, remove_alias, set_alias
+from choo.config import (
+    config_get,
+    config_list,
+    config_set,
+    config_unset,
+    get_aliases,
+    get_auth,
+    get_default_count,
+)
 from choo.output import format_board, format_next, format_service, stderr_console
 from choo.resolve import AmbiguousStation, StationNotFound, resolve_station
 from traintimes.sdk import Location, ResponseError, Service
@@ -61,8 +69,8 @@ def _check_auth() -> tuple[str, str]:
     auth = get_auth()
     if auth is None:
         stderr_console().print(
-            "No API credentials found. Run [bold]choo auth[/] to set up credentials,\n"
-            "or set CHOO_AUTH / RTT_AUTH environment variable (format: user:password).\n"
+            "No API credentials found.\n"
+            "Run [bold]choo auth[/] to set up, or set CHOO_AUTH env var.\n"
             "Register at https://api-portal.rtt.io/"
         )
         raise typer.Exit(code=1)
@@ -146,10 +154,12 @@ def _run_next(
     to_station: str,
     at: str | None = None,
     on: str | None = None,
-    count: int = 3,
+    count: int | None = None,
     arrivals: bool = False,
     json: bool = False,
 ) -> None:
+    if count is None:
+        count = get_default_count()
     _check_auth()
     from_crs = _resolve_or_exit(from_station)
     to_crs = _resolve_or_exit(to_station)
@@ -191,7 +201,9 @@ def main(
     ctx: typer.Context,
     at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
     on: Optional[str] = typer.Option(None, "--on", "-d", help="Date"),
-    count: int = typer.Option(3, "--count", "-n", help="Number of results"),
+    count: Optional[int] = typer.Option(
+        None, "--count", "-n", help="Number of results"
+    ),
     arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
     json: bool = typer.Option(False, "--json", help="Output JSON"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show debug logging"),
@@ -211,12 +223,20 @@ def main(
     _check_auth()
     aliases = get_aliases()
     if "home" in aliases and "work" in aliases:
-        _run_next("home", "work", at=at, on=on, count=count, arrivals=arrivals, json=json)
+        _run_next(
+            "home",
+            "work",
+            at=at,
+            on=on,
+            count=count,
+            arrivals=arrivals,
+            json=json,
+        )
     else:
         stderr_console().print(
             "Set up 'home' and 'work' aliases to use the default command.\n"
-            "  choo alias set home <CRS>\n"
-            "  choo alias set work <CRS>"
+            "  choo config alias.home <CRS>\n"
+            "  choo config alias.work <CRS>"
         )
         raise typer.Exit(code=1)
 
@@ -225,7 +245,9 @@ def main(
 def choo_choo_cmd(
     at: Optional[str] = typer.Option(None, "--at", "-t", help="Time HH:MM"),
     on: Optional[str] = typer.Option(None, "--on", "-d", help="Date"),
-    count: int = typer.Option(3, "--count", "-n", help="Number of results"),
+    count: Optional[int] = typer.Option(
+        None, "--count", "-n", help="Number of results"
+    ),
     arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
     json: bool = typer.Option(False, "--json", help="Output JSON"),
 ):
@@ -233,12 +255,20 @@ def choo_choo_cmd(
     _check_auth()
     aliases = get_aliases()
     if "home" in aliases and "work" in aliases:
-        _run_next("work", "home", at=at, on=on, count=count, arrivals=arrivals, json=json)
+        _run_next(
+            "work",
+            "home",
+            at=at,
+            on=on,
+            count=count,
+            arrivals=arrivals,
+            json=json,
+        )
     else:
         stderr_console().print(
             "Set up 'home' and 'work' aliases:\n"
-            "  choo alias set home <CRS>\n"
-            "  choo alias set work <CRS>"
+            "  choo config alias.home <CRS>\n"
+            "  choo config alias.work <CRS>"
         )
         raise typer.Exit(code=1)
 
@@ -251,7 +281,9 @@ def next_cmd(
     on: Optional[str] = typer.Option(
         None, "--on", "-d", help="Date (today/tomorrow/day name/ISO)"
     ),
-    count: int = typer.Option(3, "--count", "-n", help="Number of results"),
+    count: Optional[int] = typer.Option(
+        None, "--count", "-n", help="Number of results"
+    ),
     arrivals: bool = typer.Option(False, "--arrivals", help="Show arrivals"),
     json: bool = typer.Option(False, "--json", help="Output JSON"),
 ):
@@ -264,8 +296,8 @@ def next_cmd(
             stderr_console().print(
                 "Missing FROM and/or TO. Set aliases or provide stations:\n"
                 "  choo next KGX YRK\n"
-                "  choo alias set home KGX\n"
-                "  choo alias set work YRK"
+                "  choo config alias.home KGX\n"
+                "  choo config alias.work YRK"
             )
             raise typer.Exit(code=1)
     _run_next(
@@ -297,7 +329,7 @@ def board_cmd(
             stderr_console().print(
                 "Missing FROM station. Set alias or provide station:\n"
                 "  choo board KGX\n"
-                "  choo alias set home KGX"
+                "  choo config alias.home KGX"
             )
             raise typer.Exit(code=1)
     from_crs = _resolve_or_exit(from_station)
@@ -363,48 +395,55 @@ def service(
         format_service(console, response)
 
 
-# ── Alias subcommands ──────────────────────────────────────────────
-
-alias_app = typer.Typer(help="Manage station aliases.")
-app.add_typer(alias_app, name="alias")
+# ── Config command ─────────────────────────────────────────────────
 
 
-@alias_app.command("set")
-def alias_set(
-    name: str = typer.Argument(..., help="Alias name (e.g., 'home')"),
-    crs: str = typer.Argument(..., help="Station CRS code (e.g., 'HIB')"),
+def _print_config_items(console: Console) -> None:
+    """Print all config items, or 'No config set.'"""
+    items = config_list()
+    if not items:
+        console.print("  No config set.")
+        return
+    for k, v in sorted(items.items()):
+        console.print(f"  {k}={v}")
+
+
+@app.command("config")
+def config_cmd(
+    key: Optional[str] = typer.Argument(None, help="Config key (e.g., alias.home)"),
+    value: Optional[str] = typer.Argument(None, help="Value to set"),
+    list_all: bool = typer.Option(False, "--list", "-l", help="List all config"),
+    unset: bool = typer.Option(False, "--unset", help="Remove a config key"),
 ):
-    """Save a station alias."""
+    """Get/set configuration (like git config)."""
+    console = Console()
+
+    if list_all or key is None:
+        _print_config_items(console)
+        return
+
+    if unset:
+        config_unset(key)
+        console.print(f"  Unset {key}")
+        return
+
+    if value is None:
+        # Get
+        result = config_get(key)
+        if result is None:
+            stderr_console().print(f"  Key not found: {key}")
+            raise typer.Exit(1)
+        console.print(f"  {result}")
+        return
+
+    # Set
     err = stderr_console()
     try:
-        set_alias(name, crs)
+        config_set(key, value)
     except ValueError as e:
         err.print(f"[bold red]✗ {e}[/]")
         raise typer.Exit(1)
-    console = Console()
-    console.print(f"  Alias '{name}' → {crs.upper()}")
-
-
-@alias_app.command("list")
-def alias_list():
-    """Show all saved aliases."""
-    aliases = get_aliases()
-    console = Console()
-    if not aliases:
-        console.print("  No aliases configured.")
-        return
-    for name, crs in sorted(aliases.items()):
-        console.print(f"  {name:<15} {crs}")
-
-
-@alias_app.command("remove")
-def alias_remove(
-    name: str = typer.Argument(..., help="Alias name to remove"),
-):
-    """Remove a station alias."""
-    remove_alias(name)
-    console = Console()
-    console.print(f"  Removed alias '{name}'")
+    console.print(f"  {key}={value}")
 
 
 # ── Auth command ────────────────────────────────────────────────────
@@ -422,7 +461,8 @@ def auth():
     err.print("  To use choo, you need a free API token from RealTimeTrains:")
     err.print()
     err.print(
-        "  1. Create an account at https://www.realtimetrains.co.uk/ (if you don't have one)"
+        "  1. Create an account at https://www.realtimetrains.co.uk/\n"
+        "     (if you don't have one)"
     )
     err.print("  2. Visit https://api-portal.rtt.io/")
     err.print("  3. Sign in with your RTT account")

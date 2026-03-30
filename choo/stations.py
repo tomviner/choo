@@ -10,7 +10,10 @@ import httpx
 from platformdirs import user_cache_dir
 from rapidfuzz import fuzz, process
 
-STATIONS_URL = "https://raw.githubusercontent.com/davwheat/uk-railway-stations/main/stations.csv"
+
+STATIONS_URL = (
+    "https://raw.githubusercontent.com/davwheat/uk-railway-stations/main/stations.csv"
+)
 
 
 def cached_stations_path() -> Path:

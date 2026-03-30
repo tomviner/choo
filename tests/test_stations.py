@@ -6,7 +6,8 @@ import pytest
 from typer.testing import CliRunner
 
 from choo.app import app
-from choo.stations import cached_stations_path, fetch_stations, load_stations
+from choo.stations import fetch_stations, load_stations
+
 
 runner = CliRunner()
 
