@@ -115,7 +115,10 @@ def _build_when(at: str | None, on: str | None) -> _dt.date | _dt.datetime | Non
                 days_ahead = 7
             date_part = today + _dt.timedelta(days=days_ahead)
         else:
-            date_part = _dt.date.fromisoformat(on)
+            try:
+                date_part = _dt.date.fromisoformat(on)
+            except ValueError:
+                raise typer.BadParameter(f"Invalid date: '{on}'. Use YYYY-MM-DD, 'tomorrow', or a day name.")
 
     if at is not None:
         parts = at.split(":")
