@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>choo — UK train times from your terminal</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --green: #6ee7b7;
+    --blue: #38bdf8;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --yellow: #fde68a;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --red: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2.5rem; text-align: center; margin-bottom: 0.25rem; }
+  h1 span { font-size: 1.5rem; }
+  .tagline { text-align: center; color: var(--muted); font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .install {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .install code {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    color: var(--green);
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+  .install a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 0.5rem;
+  }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; color: var(--text); }
+  h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: var(--muted); }
+  .section { margin-bottom: 1.5rem; }
+  pre {
+    background: #0d1117;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 2.2;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  td:first-child { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.9em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } body { padding: 1rem; } pre { font-size: 11px; } }
+  .card {
+    background: var(--card);
+    border-left: 3px solid;
+    padding: 12px;
+    border-radius: 0 8px 8px 0;
+  }
+  .card h4 { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .card p { color: var(--muted); font-size: 12px; }
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<h1>choo <span>🚂</span></h1>
+<p class="tagline">UK train times from your terminal</p>
+<div class="install">
+  <code>uvx choo</code>
+  <a href="https://pypi.org/project/choo/">pypi.org/project/choo</a>
+</div>
+
+<h2>Quick Start</h2>
+<pre>
+<span style="color:var(--muted);">$</span> choo auth                          <span style="color:var(--dim);"># set up API credentials</span>
+<span style="color:var(--muted);">$</span> choo config alias.home HIB          <span style="color:var(--dim);"># save your home station</span>
+<span style="color:var(--muted);">$</span> choo config alias.work LBG          <span style="color:var(--dim);"># save your work station</span>
+<span style="color:var(--muted);">$</span> choo                                <span style="color:var(--dim);"># next trains home → work</span>
+<span style="color:var(--muted);">$</span> choo choo                            <span style="color:var(--dim);"># reverse: work → home</span>
+</pre>
+
+<h2>Commands</h2>
+
+<div class="section">
+<pre><span style="color:var(--green);font-weight:700;">choo</span>                                          <span style="color:var(--dim);">│ = next home work (bare default)</span>
+<span style="color:var(--green);font-weight:700;">choo</span> <span style="color:var(--purple);">--on tomorrow</span>                             <span style="color:var(--dim);">│ bare default accepts all next flags</span>
+<span style="color:var(--green);font-weight:700;">choo</span> <span style="color:var(--blue);">FROM TO</span>                                  <span style="color:var(--dim);">│ choo home work (implicit next)</span>
+<span style="color:var(--green);font-weight:700;">choo choo</span>                                      <span style="color:var(--dim);">│ = next work home (reverse commute!)</span>
+│
+├─ <span style="color:var(--pink);font-weight:700;">next</span>                                          <span style="color:var(--dim);">│ = next home work</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM</span>                                     <span style="color:var(--dim);">│ TO defaults to work alias</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span>                                 <span style="color:var(--dim);">│ choo next KGX YRK</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--at HH:MM</span>                     <span style="color:var(--dim);">│ choo next KGX YRK --at 14:30</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--on DATE</span>                       <span style="color:var(--dim);">│ choo next KGX YRK --on tomorrow</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--count N</span>                       <span style="color:var(--dim);">│ default: 5 (configurable)</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--arrivals</span>                      <span style="color:var(--dim);">│</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--json</span>                           <span style="color:var(--dim);">│</span>
+│
+├─ <span style="color:var(--yellow);font-weight:700;">board</span>                                         <span style="color:var(--dim);">│ = board home</span>
+│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM</span>                                    <span style="color:var(--dim);">│ choo board KGX</span>
+│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM TO</span>                                <span style="color:var(--dim);">│ choo board KGX YRK (filtered)</span>
+│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM</span> <span style="color:var(--purple);">--at --on --arrivals --json</span>       <span style="color:var(--dim);">│ same flags as next</span>
+│
+├─ <span style="color:var(--blue);font-weight:700;">service</span> <span style="color:var(--blue);">UID</span>                                  <span style="color:var(--dim);">│ choo service C41053</span>
+│  <span style="color:var(--blue);font-weight:700;">service</span> <span style="color:var(--blue);">UID</span> <span style="color:var(--purple);">--on DATE --json</span>                <span style="color:var(--dim);">│</span>
+│
+├─ <span style="color:var(--orange);font-weight:700;">config</span>                                        <span style="color:var(--dim);">│ list all config (like git config)</span>
+│  <span style="color:var(--orange);font-weight:700;">config</span> <span style="color:var(--blue);">KEY</span>                                    <span style="color:var(--dim);">│ get a value</span>
+│  <span style="color:var(--orange);font-weight:700;">config</span> <span style="color:var(--blue);">KEY VALUE</span>                              <span style="color:var(--dim);">│ set a value</span>
+│  <span style="color:var(--orange);font-weight:700;">config</span> <span style="color:var(--purple);">--unset</span> <span style="color:var(--blue);">KEY</span>                           <span style="color:var(--dim);">│ remove a key</span>
+│
+├─ <span style="color:var(--purple);font-weight:700;">auth</span>                                          <span style="color:var(--dim);">│ guided credential setup</span>
+│
+└─ <span style="color:var(--cyan);font-weight:700;">stations</span>
+   <span style="color:var(--cyan);font-weight:700;">stations update</span>                               <span style="color:var(--dim);">│ fetch fresh data from GitHub</span>
+   <span style="color:var(--cyan);font-weight:700;">stations list</span>                                 <span style="color:var(--dim);">│ show count of loaded stations</span>
+</pre>
+</div>
+
+<h2>Config Keys</h2>
+<table>
+  <thead><tr><th>Key</th><th>Example</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td style="color:var(--orange);">alias.home</td><td style="color:var(--muted);">HIB</td><td>Station alias</td></tr>
+    <tr><td style="color:var(--orange);">alias.work</td><td style="color:var(--muted);">LBG</td><td>Station alias</td></tr>
+    <tr><td style="color:var(--orange);">alias.*</td><td style="color:var(--muted);">any CRS</td><td>Custom station aliases</td></tr>
+    <tr><td style="color:var(--orange);">next.count</td><td style="color:var(--muted);">5</td><td>Default number of results</td></tr>
+  </tbody>
+</table>
+<p style="margin-top:10px;color:var(--muted);font-size:12px;">
+  Env var overrides: <code>CHOO_ALIAS_HOME=HIB</code>, <code>CHOO_AUTH=user:pass</code>
+</p>
+
+<h2>Smart Behaviours</h2>
+<div class="grid">
+  <div class="card" style="border-color:var(--green);">
+    <h4 style="color:var(--green);">choo choo = come home</h4>
+    <p>Reverses home/work. Next trains from work → home.</p>
+  </div>
+  <div class="card" style="border-color:var(--yellow);">
+    <h4 style="color:var(--yellow);">Late night → tomorrow</h4>
+    <p>No trains today? Auto-shows tomorrow's first services.</p>
+  </div>
+  <div class="card" style="border-color:var(--blue);">
+    <h4 style="color:var(--blue);">Fuzzy station names</h4>
+    <p>2,599 stations. "kings cross" → KGX. "paddington" → PAD.</p>
+  </div>
+  <div class="card" style="border-color:var(--pink);">
+    <h4 style="color:var(--pink);">Defaults everywhere</h4>
+    <p>Bare choo = next home work. Bare board = board home. Now is default time.</p>
+  </div>
+</div>
+
+<h2>Station Input</h2>
+<table>
+  <thead><tr><th>Input</th><th>Type</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td style="color:var(--blue);">home</td><td>Alias</td><td style="color:var(--muted);">Resolved from config/env</td></tr>
+    <tr><td style="color:var(--blue);">KGX</td><td>CRS code</td><td style="color:var(--muted);">3 uppercase letters → passthrough</td></tr>
+    <tr><td style="color:var(--blue);">"kings cross"</td><td>Fuzzy name</td><td style="color:var(--muted);">Matched against 2,599 stations</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>
+    Powered by the <a href="https://www.realtimetrains.co.uk/">RealTimeTrains</a> API
+    · Station data from <a href="https://github.com/davwheat/uk-railway-stations">davwheat/uk-railway-stations</a> (ODbL)
+    · <a href="https://github.com/tomviner/choo">Source on GitHub</a>
+  </p>
+</div>
+
+</body>
+</html>
