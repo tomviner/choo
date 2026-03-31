@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 import requests_mock as rm
+import typer
 from freezegun import freeze_time
 from typer.testing import CliRunner
 
@@ -324,6 +325,10 @@ class TestBuildWhen:
     def test_iso_date(self):
         result = _build_when(None, "2026-04-01")
         assert result == dt.date(2026, 4, 1)
+
+    def test_invalid_date(self):
+        with pytest.raises(typer.BadParameter, match="Invalid date"):
+            _build_when(None, "notadate")
 
     @freeze_time("2026-03-14")
     def test_at_only(self):
