@@ -22,6 +22,7 @@ from choo.config import (
 )
 from choo.output import format_board, format_next, format_service, stderr_console
 from choo.resolve import AmbiguousStation, StationNotFound, resolve_station
+from choo.stations import load_stations
 from traintimes.sdk import Location, ResponseError, Service
 
 
@@ -32,9 +33,15 @@ class _DefaultGroup(typer.core.TyperGroup):
         try:
             return super().resolve_command(ctx, args)
         except Exception:
-            # "choo choo" → reverse home/work route (come home!)
+            # "choo choo [subcmd]" → reverse home/work route (come home!)
             if args and args[0] == "choo":
-                return super().resolve_command(ctx, ["choo-choo", *args[1:]])
+                rest = args[1:]
+                # "choo choo board" → board for work station going home
+                if rest and rest[0] == "board":
+                    return super().resolve_command(
+                        ctx, ["board", "work", "home", *rest[1:]]
+                    )
+                return super().resolve_command(ctx, ["choo-choo", *rest])
             # Unknown subcommand — treat all args as 'next' arguments
             return super().resolve_command(ctx, ["next", *args])
 
@@ -133,15 +140,22 @@ def _build_when(at: str | None, on: str | None) -> _dt.date | _dt.datetime | Non
     return None
 
 
+def _station_label(crs: str) -> str:
+    """Format as 'Station Name (CRS)'."""
+    stations = load_stations()
+    name = stations.get(crs)
+    return f"{name} ({crs})" if name else crs
+
+
 def _print_interpretation(
     from_name: str,
     to_name: str | None = None,
     when: _dt.date | _dt.datetime | None = None,
 ) -> None:
     con = stderr_console()
-    parts = [f"  {from_name}"]
+    parts = [f"  {_station_label(from_name)}"]
     if to_name:
-        parts.append(f" \u2192 {to_name}")
+        parts.append(f" \u2192 {_station_label(to_name)}")
     if isinstance(when, _dt.datetime):
         parts.append(f", {when:%A} at {when:%H:%M}")
     elif isinstance(when, _dt.date):

@@ -92,7 +92,7 @@ def format_next(
         marker = _MARKERS[i] if i < len(_MARKERS) else f"({i + 1})"
         evt = svc.location_detail
         dep = _departure_time(evt)
-        plat = f"P{evt.platform}" if evt.platform else ""
+        plat = f"Plat {evt.platform}" if evt.platform else ""
         lateness = evt.realtime_gbtt_departure_lateness
         _CANCEL = ("CANCELLED_CALL", "CANCELLED_PASS")
         cancelled = evt.display_as in _CANCEL if evt.display_as else False
@@ -117,7 +117,7 @@ def format_board(console: Console, response: LocationResponse) -> None:
     table = Table()
     table.add_column("TIME")
     table.add_column("DEST")
-    table.add_column("PLAT")
+    table.add_column("PLATFORM")
     table.add_column("STATUS")
     table.add_column("OPERATOR")
     table.add_column("UID", style="dim cyan")
