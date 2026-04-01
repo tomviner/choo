@@ -2,6 +2,8 @@
 
 UK train times from your terminal.
 
+**`choo`** to go to work. **`choo choo`** to come home.
+
 ## Install
 
 ```
@@ -21,13 +23,13 @@ pip install choo
 choo auth
 
 # 2. Set up your commute
-choo config alias.home HIB
-choo config alias.work LBG
+choo config alias.home "Highbury & Islington"
+choo config alias.work "London Bridge"
 
 # 3. Go
 choo              # next trains home → work
 choo choo         # reverse: work → home
-choo KGX YRK     # King's Cross to York
+choo "kings cross" york     # fuzzy station names work too
 ```
 
 ## Commands
@@ -39,10 +41,10 @@ Show next trains between two stations. Defaults to `home` → `work` aliases.
 ```bash
 choo                                 # home → work, now
 choo --on tomorrow                   # home → work, tomorrow
-choo PAD BRI                         # Paddington to Bristol
-choo next PAD BRI --at 08:30         # departing around 08:30
-choo next PAD BRI --on monday        # next Monday
-choo next PAD BRI --count 10         # show 10 results
+choo paddington bristol              # fuzzy station names
+choo next paddington bristol --at 08:30   # departing around 08:30
+choo next KGX YRK --on monday        # CRS codes work too
+choo next KGX YRK --count 10         # show 10 results
 ```
 
 No trains running? Choo automatically shows tomorrow's first services.
@@ -54,6 +56,7 @@ Reverse commute — next trains from `work` → `home`.
 ```bash
 choo choo                            # heading home
 choo choo --on friday                # Friday evening trains
+choo choo board                      # departure board from work
 ```
 
 ### `choo board [FROM] [TO]`
@@ -61,8 +64,8 @@ choo choo --on friday                # Friday evening trains
 Departure board for a station. Same arguments as `next`, but shows all services in a table.
 
 ```bash
-choo board KGX                       # all departures from King's Cross
-choo board KGX YRK                   # filtered to York
+choo board "kings cross"             # all departures from King's Cross
+choo board "kings cross" york        # filtered to York
 choo board KGX --arrivals            # arrivals instead
 choo board --on tomorrow             # defaults to home station
 ```
@@ -81,12 +84,12 @@ choo service C41053 --on 2026-03-16
 Get/set configuration, like `git config`.
 
 ```bash
-choo config alias.home HIB           # set station alias
-choo config alias.work LBG
-choo config next.count 10            # default number of results
-choo config alias.home               # get a value
-choo config                          # list all
-choo config --unset alias.home       # remove
+choo config alias.home "Highbury & Islington"   # set station alias
+choo config alias.work "London Bridge"
+choo config next.count 10                       # default number of results
+choo config alias.home                          # get a value
+choo config                                     # list all
+choo config --unset alias.home                  # remove
 ```
 
 ### `choo auth`
@@ -122,8 +125,8 @@ Stations can be specified as:
 
 | Key | Example | Description |
 |-----|---------|-------------|
-| `alias.home` | `HIB` | Station alias |
-| `alias.work` | `LBG` | Station alias |
+| `alias.home` | `HIB` or `"Highbury & Islington"` | Station alias |
+| `alias.work` | `LBG` or `"London Bridge"` | Station alias |
 | `alias.*` | any CRS | Custom aliases |
 | `next.count` | `5` | Default result count |
 

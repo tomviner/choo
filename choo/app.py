@@ -143,8 +143,9 @@ def _build_when(at: str | None, on: str | None) -> _dt.date | _dt.datetime | Non
 def _station_label(crs: str) -> str:
     """Format as 'Station Name (CRS)'."""
     stations = load_stations()
-    name = stations.get(crs)
-    return f"{name} ({crs})" if name else crs
+    crs_upper = crs.upper()
+    name = stations.get(crs_upper)
+    return f"{name} ({crs_upper})" if name else crs
 
 
 def _print_interpretation(

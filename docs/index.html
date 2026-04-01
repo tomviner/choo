@@ -106,6 +106,7 @@
 
 <h1>choo <span>🚂</span></h1>
 <p class="tagline">UK train times from your terminal</p>
+<p style="text-align:center;color:var(--green);font-size:1.1rem;margin-bottom:0.25rem;"><code style="color:var(--green);font-size:1.1rem;">choo</code> to go to work. <code style="color:var(--green);font-size:1.1rem;">choo choo</code> to come home.</p>
 <div class="install">
   <code>uvx choo</code>
   <a href="https://pypi.org/project/choo/">pypi.org/project/choo</a>
@@ -114,8 +115,8 @@
 <h2>Quick Start</h2>
 <pre>
 <span style="color:var(--muted);">$</span> choo auth                          <span style="color:var(--dim);"># set up API credentials</span>
-<span style="color:var(--muted);">$</span> choo config alias.home HIB          <span style="color:var(--dim);"># save your home station</span>
-<span style="color:var(--muted);">$</span> choo config alias.work LBG          <span style="color:var(--dim);"># save your work station</span>
+<span style="color:var(--muted);">$</span> choo config alias.home "Highbury &amp; Islington"   <span style="color:var(--dim);"># save your home station</span>
+<span style="color:var(--muted);">$</span> choo config alias.work "London Bridge"          <span style="color:var(--dim);"># save your work station</span>
 <span style="color:var(--muted);">$</span> choo                                <span style="color:var(--dim);"># next trains home → work</span>
 <span style="color:var(--muted);">$</span> choo choo                            <span style="color:var(--dim);"># reverse: work → home</span>
 </pre>
@@ -127,19 +128,20 @@
 <span style="color:var(--green);font-weight:700;">choo</span> <span style="color:var(--purple);">--on tomorrow</span>                             <span style="color:var(--dim);">│ bare default accepts all next flags</span>
 <span style="color:var(--green);font-weight:700;">choo</span> <span style="color:var(--blue);">FROM TO</span>                                  <span style="color:var(--dim);">│ choo home work (implicit next)</span>
 <span style="color:var(--green);font-weight:700;">choo choo</span>                                      <span style="color:var(--dim);">│ = next work home (reverse commute!)</span>
+<span style="color:var(--green);font-weight:700;">choo choo board</span>                                <span style="color:var(--dim);">│ = board work home (departure board)</span>
 │
 ├─ <span style="color:var(--pink);font-weight:700;">next</span>                                          <span style="color:var(--dim);">│ = next home work</span>
 │  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM</span>                                     <span style="color:var(--dim);">│ TO defaults to work alias</span>
-│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span>                                 <span style="color:var(--dim);">│ choo next KGX YRK</span>
-│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--at HH:MM</span>                     <span style="color:var(--dim);">│ choo next KGX YRK --at 14:30</span>
-│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--on DATE</span>                       <span style="color:var(--dim);">│ choo next KGX YRK --on tomorrow</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span>                                 <span style="color:var(--dim);">│ choo next paddington bristol</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--at HH:MM</span>                     <span style="color:var(--dim);">│ choo next paddington bristol --at 14:30</span>
+│  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--on DATE</span>                       <span style="color:var(--dim);">│ choo next "kings cross" york --on tomorrow</span>
 │  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--count N</span>                       <span style="color:var(--dim);">│ default: 5 (configurable)</span>
 │  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--arrivals</span>                      <span style="color:var(--dim);">│</span>
 │  <span style="color:var(--pink);font-weight:700;">next</span> <span style="color:var(--blue);">FROM TO</span> <span style="color:var(--purple);">--json</span>                           <span style="color:var(--dim);">│</span>
 │
 ├─ <span style="color:var(--yellow);font-weight:700;">board</span>                                         <span style="color:var(--dim);">│ = board home</span>
-│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM</span>                                    <span style="color:var(--dim);">│ choo board KGX</span>
-│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM TO</span>                                <span style="color:var(--dim);">│ choo board KGX YRK (filtered)</span>
+│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM</span>                                    <span style="color:var(--dim);">│ choo board "kings cross"</span>
+│  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM TO</span>                                <span style="color:var(--dim);">│ choo board "kings cross" york (filtered)</span>
 │  <span style="color:var(--yellow);font-weight:700;">board</span> <span style="color:var(--blue);">FROM</span> <span style="color:var(--purple);">--at --on --arrivals --json</span>       <span style="color:var(--dim);">│ same flags as next</span>
 │
 ├─ <span style="color:var(--blue);font-weight:700;">service</span> <span style="color:var(--blue);">UID</span>                                  <span style="color:var(--dim);">│ choo service C41053</span>
@@ -162,8 +164,8 @@
 <table>
   <thead><tr><th>Key</th><th>Example</th><th>Purpose</th></tr></thead>
   <tbody>
-    <tr><td style="color:var(--orange);">alias.home</td><td style="color:var(--muted);">HIB</td><td>Station alias</td></tr>
-    <tr><td style="color:var(--orange);">alias.work</td><td style="color:var(--muted);">LBG</td><td>Station alias</td></tr>
+    <tr><td style="color:var(--orange);">alias.home</td><td style="color:var(--muted);">Highbury &amp; Islington</td><td>Station alias</td></tr>
+    <tr><td style="color:var(--orange);">alias.work</td><td style="color:var(--muted);">London Bridge</td><td>Station alias</td></tr>
     <tr><td style="color:var(--orange);">alias.*</td><td style="color:var(--muted);">any CRS</td><td>Custom station aliases</td></tr>
     <tr><td style="color:var(--orange);">next.count</td><td style="color:var(--muted);">5</td><td>Default number of results</td></tr>
   </tbody>
